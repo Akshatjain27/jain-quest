@@ -797,49 +797,131 @@
           osc.start(now);
           osc.stop(now + 0.1);
         } else if (type === 'correct') {
-          const freqs = [1046.5, 1318.5, 1567.98];
+          // High-register resonant bell chime with exponential decay
+          const freqs = [1200, 1500, 1800];
           freqs.forEach((f, idx) => {
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(f, now + idx * 0.03);
-            gain.gain.setValueAtTime(0.2, now + idx * 0.03);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+            osc.frequency.setValueAtTime(f, now + idx * 0.025);
+            gain.gain.setValueAtTime(0.24, now + idx * 0.025);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.025 + 0.45);
             osc.connect(gain);
             gain.connect(ctx.destination);
-            osc.start(now + idx * 0.03);
-            osc.stop(now + 0.36);
+            osc.start(now + idx * 0.025);
+            osc.stop(now + idx * 0.025 + 0.46);
           });
         } else if (type === 'wrong') {
+          // Low damped square/sawtooth thud: 130Hz -> 85Hz
           const osc = ctx.createOscillator();
           const gain = ctx.createGain();
           osc.type = 'sawtooth';
-          osc.frequency.setValueAtTime(210, now);
-          osc.frequency.linearRampToValueAtTime(135, now + 0.16);
-          gain.gain.setValueAtTime(0.18, now);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+          osc.frequency.setValueAtTime(130, now);
+          osc.frequency.exponentialRampToValueAtTime(85, now + 0.22);
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
           osc.connect(gain);
           gain.connect(ctx.destination);
           osc.start(now);
-          osc.stop(now + 0.18);
+          osc.stop(now + 0.23);
         } else if (type === 'fanfare') {
-          const notes = [523.25, 659.25, 783.99, 1046.5];
+          // Rich multi-voice arpeggio victory fanfare
+          const notes = [523.25, 659.25, 783.99, 1046.5, 1318.5]; // C5, E5, G5, C6, E6
           notes.forEach((n, i) => {
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
             osc.type = 'triangle';
-            osc.frequency.setValueAtTime(n, now + i * 0.11);
-            gain.gain.setValueAtTime(0.22, now + i * 0.11);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.11 + 0.35);
+            osc.frequency.setValueAtTime(n, now + i * 0.09);
+            gain.gain.setValueAtTime(0.24, now + i * 0.09);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.09 + 0.45);
             osc.connect(gain);
             gain.connect(ctx.destination);
-            osc.start(now + i * 0.11);
-            osc.stop(now + i * 0.11 + 0.36);
+            osc.start(now + i * 0.09);
+            osc.stop(now + i * 0.09 + 0.46);
           });
         }
       } catch (e) {
         // Audio error caught safely
       }
+    }
+
+    // 3.5 CANVAS CONFETTI ENGINE (Zero-Dependency)
+    let confettiAnimationId = null;
+    let confettiParticles = [];
+
+    function fireConfetti(particleCount = 130) {
+      const canvas = document.getElementById('fx-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const colors = ['#f59e0b', '#10b981', '#3b82f6', '#ec4899', '#8b5cf6', '#ef4444', '#facc15', '#06b6d4'];
+
+      const newParticles = [];
+      for (let i = 0; i < particleCount; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 12 + 4;
+        newParticles.push({
+          x: canvas.width / 2 + (Math.random() - 0.5) * (canvas.width * 0.5),
+          y: canvas.height * 0.35 + (Math.random() - 0.5) * 80,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 6,
+          gravity: 0.28 + Math.random() * 0.15,
+          wind: (Math.random() - 0.5) * 0.6,
+          rotation: Math.random() * 360,
+          rotationSpeed: (Math.random() - 0.5) * 12,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          size: Math.random() * 9 + 6,
+          aspect: Math.random() * 0.6 + 0.4,
+          alpha: 1,
+          decay: 0.006 + Math.random() * 0.008
+        });
+      }
+
+      confettiParticles = [...confettiParticles, ...newParticles];
+
+      if (confettiAnimationId) {
+        cancelAnimationFrame(confettiAnimationId);
+      }
+
+      function updateConfetti() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (let i = confettiParticles.length - 1; i >= 0; i--) {
+          const p = confettiParticles[i];
+          p.x += p.vx + p.wind;
+          p.y += p.vy;
+          p.vy += p.gravity;
+          p.vx *= 0.98;
+          p.rotation += p.rotationSpeed;
+          p.alpha -= p.decay;
+
+          if (p.alpha <= 0 || p.y > canvas.height + 40) {
+            confettiParticles.splice(i, 1);
+            continue;
+          }
+
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.rotation * Math.PI) / 180);
+          ctx.globalAlpha = Math.max(0, p.alpha);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.size / 2, (-p.size * p.aspect) / 2, p.size, p.size * p.aspect);
+          ctx.restore();
+        }
+
+        if (confettiParticles.length > 0) {
+          confettiAnimationId = requestAnimationFrame(updateConfetti);
+        } else {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          confettiAnimationId = null;
+        }
+      }
+
+      confettiAnimationId = requestAnimationFrame(updateConfetti);
     }
 
     // 4. BOARD INITIALIZATION
@@ -1099,11 +1181,11 @@
 
       if (slotObj && slotObj.evalStatus) {
         const badge = document.createElement('div');
-        badge.className = 'eval-mark absolute bottom-0.5 left-1/2 -translate-x-1/2 font-extrabold text-sm sm:text-base leading-none pointer-events-none';
+        badge.className = 'eval-mark badge-pop absolute bottom-0.5 left-1/2 -translate-x-1/2 font-extrabold text-sm sm:text-base leading-none pointer-events-none';
         if (slotObj.evalStatus === 'correct') {
-          badge.innerHTML = '<span class="text-emerald-950 drop-shadow-[0_1px_1px_rgba(255,255,255,0.9)]">✓</span>';
+          badge.innerHTML = '<span class="text-emerald-950 drop-shadow-[0_1px_1px_rgba(255,255,255,0.9)] font-black text-base sm:text-lg">✓</span>';
         } else {
-          badge.innerHTML = '<span class="text-stone-900 drop-shadow-[0_1px_1px_rgba(255,255,255,0.6)]">✕</span>';
+          badge.innerHTML = '<span class="text-stone-900 drop-shadow-[0_1px_1px_rgba(255,255,255,0.6)] font-black text-base sm:text-lg">✕</span>';
         }
         div.appendChild(badge);
       }
@@ -1309,23 +1391,46 @@
         const slot = gameState.slots[slotIdx];
         if (!slot.placedCardId) continue;
 
+        const slotEl = document.querySelector(`.drop-slot[data-slot-index="${slotIdx}"]`);
+        const cardEl = slotEl ? slotEl.querySelector('.game-card') : null;
+        if (cardEl) {
+          cardEl.classList.add('card-evaluating');
+        } else if (slotEl) {
+          slotEl.classList.add('card-evaluating');
+        }
+
+        // Wait ~260ms for authentic Wordwall cadence
+        await new Promise(r => setTimeout(r, 260));
+
+        if (cardEl) {
+          cardEl.classList.remove('card-evaluating');
+        }
+        if (slotEl) {
+          slotEl.classList.remove('card-evaluating');
+        }
+
         const placedCard = gameState.cards.find(c => c.id === slot.placedCardId);
-        if (!placedCard) continue;
-
-        await new Promise(r => setTimeout(r, 240));
-
-        if (placedCard.correctSign === slot.sign) {
+        if (placedCard && placedCard.correctSign === slot.sign) {
           slot.evalStatus = 'correct';
           correctCount++;
           gameState.score = correctCount;
           playSound('correct');
+          renderBoard();
         } else {
           slot.evalStatus = 'wrong';
           playSound('wrong');
+          renderBoard();
+          const targetSlotEl = document.querySelector(`.drop-slot[data-slot-index="${slotIdx}"]`);
+          const wrongCardEl = targetSlotEl ? targetSlotEl.querySelector('.game-card') : null;
+          if (wrongCardEl) {
+            wrongCardEl.classList.add('shake-wrong');
+            wrongCardEl.addEventListener('animationend', () => {
+              wrongCardEl.classList.remove('shake-wrong');
+            }, { once: true });
+          }
         }
 
         updateScoreDisplay();
-        renderBoard();
       }
 
       gameState.submitted = true;
@@ -1333,6 +1438,7 @@
       renderBoard();
 
       setTimeout(() => {
+        fireConfetti(120);
         playSound('fanfare');
         showResultModal();
       }, 700);
@@ -1353,6 +1459,7 @@
       gameState.score = gameState.slots.length;
       updateScoreDisplay();
       playSound('fanfare');
+      fireConfetti(80);
       renderBoard();
     }
 
@@ -1360,12 +1467,29 @@
       const scoreEl = document.getElementById('score-display');
       if (scoreEl) {
         scoreEl.textContent = (gameState && gameState.score !== undefined) ? gameState.score : 0;
+        const container = scoreEl.parentElement;
+        if (container) {
+          container.classList.remove('scale-110');
+          void container.offsetWidth;
+          container.classList.add('scale-110', 'transition-transform', 'duration-150');
+          setTimeout(() => container.classList.remove('scale-110'), 150);
+        }
       }
     }
 
     // 7. CONTROLS & TIMERS
     function resetBoard() {
       if (isEvaluating) return;
+      if (confettiAnimationId) {
+        cancelAnimationFrame(confettiAnimationId);
+        confettiAnimationId = null;
+        confettiParticles = [];
+        const canvas = document.getElementById('fx-canvas');
+        if (canvas) {
+          const ctx = canvas.getContext('2d');
+          if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      }
       initGameBoard(activeDataset);
       renderBoard();
     }
