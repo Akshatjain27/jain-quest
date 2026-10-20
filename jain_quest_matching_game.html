@@ -377,26 +377,32 @@
         </div>
       </div>
 
-      <!-- Center: Clean Single-Page Mode Badge -->
-      <div class="hidden md:flex items-center gap-1.5 bg-amber-950/85 text-amber-200 px-3.5 py-1 rounded-full border border-amber-400/60 shadow-sm text-xs font-semibold">
+      <!-- Center: Active Dataset Badge Pill -->
+      <div id="active-dataset-pill" class="hidden md:flex items-center gap-1.5 bg-amber-950/85 text-amber-200 px-3 py-1 rounded-full border border-amber-400/60 shadow-sm text-xs font-semibold">
         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span>Single Page Mode (10 Tirthankaras)</span>
+        <span id="active-dataset-name">Video Set 1</span>
       </div>
 
-      <!-- Right: Dataset Mode + JSON Manager + Score Display -->
+      <!-- Right: New Game + Dataset Mode + JSON Manager + Score Display -->
       <div class="flex items-center gap-2">
+        <button id="new-game-btn" onclick="startRandomGame()" class="text-xs sm:text-sm bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-bold py-1.5 px-3 rounded-lg shadow flex items-center gap-1.5 transition" title="Start a fresh game with a random 10-Tirthankara set">
+          <span>🎲 New Game</span>
+          <span class="hidden sm:inline text-amber-200 text-[11px]">(Random Set)</span>
+        </button>
+
         <select id="dataset-select" onchange="switchDatasetMode(this.value)" class="text-xs sm:text-sm bg-amber-100 hover:bg-amber-200 text-amber-950 font-bold py-1.5 px-2.5 rounded-lg border border-amber-400 cursor-pointer focus:outline-none">
-          <option value="json10_exact">Attached jain-quest.json (Exact)</option>
-          <option value="json10_authentic">Attached JSON (Authentic Signs)</option>
+          <option value="random">🎲 Random Set</option>
           <option value="video_page1">Video Set 1 (10 Items)</option>
           <option value="video_page2">Video Set 2 (10 Items)</option>
+          <option value="json10_authentic">Attached JSON (Authentic Signs)</option>
+          <option value="json10_exact">Attached jain-quest.json (Exact)</option>
         </select>
 
-        <button onclick="openDataModal()" class="text-xs sm:text-sm bg-stone-800 hover:bg-stone-700 text-white font-semibold py-1.5 px-3 rounded-lg shadow flex items-center gap-1.5 transition" title="Upload Custom JSON or Logos">
+        <button onclick="openDataModal()" class="text-xs sm:text-sm bg-stone-800 hover:bg-stone-700 text-white font-semibold py-1.5 px-3 rounded-lg shadow flex items-center gap-1.5 transition" title="Upload Custom JSON, Multi-JSON Sets, or Logos">
           <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
           </svg>
-          <span class="hidden md:inline">JSON / Logos</span>
+          <span class="hidden md:inline">JSON Manager</span>
         </button>
 
         <div class="flex items-center gap-1 bg-emerald-50 border border-emerald-400 text-emerald-900 px-3 py-1 rounded-lg font-extrabold text-base sm:text-lg shadow-sm" title="Total Correct Answers">
@@ -523,7 +529,7 @@
       <div class="flex items-center justify-between border-b pb-3 mb-4">
         <div>
           <h2 class="text-xl font-extrabold text-amber-950">Jain Quest - JSON Data & Logo Manager</h2>
-          <p class="text-xs text-stone-600">Configure your custom JSON file or preview local logo images directly</p>
+          <p class="text-xs text-stone-600">Configure custom JSON files, upload multiple datasets simultaneously, or preview local logos</p>
         </div>
         <button onclick="closeDataModal()" class="text-stone-500 hover:text-stone-800 text-2xl font-bold">&times;</button>
       </div>
@@ -540,21 +546,43 @@
         </div>
       </div>
 
-      <!-- Upload or Edit JSON Data -->
+      <!-- Multi-JSON File Upload & Pool Section -->
+      <div class="mb-5 bg-stone-50 p-3.5 rounded-xl border border-stone-200">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+          <div>
+            <label class="text-sm font-bold text-stone-800">Multi-JSON File Upload</label>
+            <p class="text-[11px] text-stone-500">Select one or multiple .json files simultaneously to expand the playable sets pool</p>
+          </div>
+          <input type="file" multiple accept=".json" onchange="handleMultipleJsonUpload(event)" class="text-xs file:mr-2 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-bold file:bg-amber-600 file:text-white hover:file:bg-amber-700 cursor-pointer" />
+        </div>
+
+        <!-- Dynamic List of Registered Datasets with Item Counts & Quick Play -->
+        <div class="mt-3">
+          <div class="text-xs font-bold text-stone-700 mb-1.5 flex items-center justify-between">
+            <span>Playable Datasets Pool</span>
+            <span id="registered-datasets-count" class="text-[11px] text-amber-700 font-semibold">3 Datasets Registered</span>
+          </div>
+          <div id="dataset-registry-list" class="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+            <!-- Populated dynamically via JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Upload or Edit Single JSON Data -->
       <div class="mb-4">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-          <label class="text-sm font-bold text-stone-800">Game Input Data (`jain-quest.json` format)</label>
-          <input type="file" accept=".json" onchange="handleJsonFileUpload(event)" class="text-xs file:mr-2 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-bold file:bg-stone-800 file:text-white hover:file:bg-stone-700" />
+          <label class="text-sm font-bold text-stone-800">Active Game Data Editor (`jain-quest.json` format)</label>
+          <input type="file" accept=".json" onchange="handleJsonFileUpload(event)" class="text-xs file:mr-2 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-bold file:bg-stone-800 file:text-white hover:file:bg-stone-700 cursor-pointer" />
         </div>
-        <textarea id="json-editor" rows="9" class="w-full font-mono text-xs p-3 rounded-xl border border-stone-300 bg-stone-50 focus:outline-none focus:border-amber-600"></textarea>
+        <textarea id="json-editor" rows="7" class="w-full font-mono text-xs p-3 rounded-xl border border-stone-300 bg-white focus:outline-none focus:border-amber-600"></textarea>
         <p class="text-[11px] text-stone-500 mt-1">
-          Format: Array of objects with <code>{"godname": "...", "sign": "..."}</code>.
+          Format: Array of objects with <code>{"godname": "...", "sign": "..."}</code>. Exactly 10 items will be played.
         </p>
       </div>
 
       <div class="flex flex-wrap items-center justify-end gap-2 pt-2 border-t">
         <button onclick="downloadCurrentJson()" class="px-4 py-2 rounded-lg bg-stone-200 hover:bg-stone-300 text-stone-800 text-xs font-bold transition">
-          Download jain-quest.json
+          Download Active JSON
         </button>
         <button onclick="applyCustomJson()" class="px-5 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-sm font-bold shadow transition">
           Apply & Start Game
@@ -585,12 +613,18 @@
         </div>
       </div>
 
-      <div class="flex items-center justify-center gap-3">
-        <button onclick="closeResultModal()" class="px-4 py-2.5 rounded-xl bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold text-sm transition">
-          Review Board
+      <div class="flex flex-wrap items-center justify-center gap-2.5">
+        <button onclick="closeResultModal(); startRandomGame();" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-bold text-sm shadow-md transition flex items-center gap-1.5" title="Start a fresh game with a random 10-Tirthankara set">
+          <span>🎲 Next Random Game</span>
         </button>
-        <button onclick="closeResultModal(); resetBoard();" class="px-6 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-sm shadow-lg transition">
-          Play Again
+        <button onclick="closeResultModal(); resetBoard();" class="px-4 py-2.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-950 font-bold text-sm border border-amber-300 transition flex items-center gap-1.5" title="Replay this exact set">
+          <span>🔄 Play Again</span>
+        </button>
+        <button onclick="closeResultModal();" class="px-3.5 py-2.5 rounded-xl bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold text-sm transition flex items-center gap-1.5" title="Inspect current board state">
+          <span>👁️ Review Board</span>
+        </button>
+        <button onclick="closeResultModal(); fillCorrectAnswers();" class="px-3.5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm shadow transition flex items-center gap-1.5" title="Show all correct answers">
+          <span>Show Correct Answers</span>
         </button>
       </div>
     </div>
@@ -687,6 +721,9 @@
       const id = `custom_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
       const datasetEntry = { id, name, items: items.slice(0, 10), data: items.slice(0, 10) };
       DATASET_REGISTRY.push(datasetEntry);
+      if (typeof updateDatasetRegistryUI === 'function') {
+        updateDatasetRegistryUI();
+      }
       return true;
     }
 
@@ -720,6 +757,7 @@
     // 2. STATE DEFINITIONS
     let activeDataset = [...VIDEO_PAGE1_DATASET];
     let activeDatasetName = 'Video Set 1 (10 भगवान)';
+    let activeDatasetId = 'video_set1';
     let currentDatasetMode = 'random';
     
     // Core Game State (Single Page)
@@ -1492,33 +1530,139 @@
       }
       initGameBoard(activeDataset);
       renderBoard();
+      resetTimer();
     }
 
-    function switchDatasetMode(mode) {
-      currentDatasetMode = mode;
-      if (mode === 'random') {
-        const randomDs = pickRandomDataset();
-        if (randomDs) {
-          activeDataset = [...randomDs.items];
-          activeDatasetName = randomDs.name;
+    function startRandomGame() {
+      if (confettiAnimationId) {
+        cancelAnimationFrame(confettiAnimationId);
+        confettiAnimationId = null;
+        confettiParticles = [];
+        const canvas = document.getElementById('fx-canvas');
+        if (canvas) {
+          const ctx = canvas.getContext('2d');
+          if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
-      } else if (mode === 'json10_exact') {
-        activeDataset = [...ATTACHED_JSON_EXACT];
-        activeDatasetName = 'Attached JSON (Exact)';
-      } else if (mode === 'json10_authentic') {
-        activeDataset = [...AUTHENTIC_SET_DATASET];
-        activeDatasetName = 'Authentic Signs (10 भगवान)';
-      } else if (mode === 'video_page1') {
-        activeDataset = [...VIDEO_PAGE1_DATASET];
-        activeDatasetName = 'Video Set 1 (10 भगवान)';
-      } else if (mode === 'video_page2') {
-        activeDataset = [...VIDEO_PAGE2_DATASET];
-        activeDatasetName = 'Video Set 2 (10 भगवान)';
+      }
+      const randomDs = pickRandomDataset();
+      if (randomDs && Array.isArray(randomDs.items)) {
+        activeDataset = [...randomDs.items];
+        activeDatasetName = randomDs.name;
+        activeDatasetId = randomDs.id;
+      }
+      updateActiveDatasetUI();
+      initGameBoard(activeDataset);
+      renderBoard();
+      resetTimer();
+    }
+
+    function updateActiveDatasetUI() {
+      const pillName = document.getElementById('active-dataset-name');
+      if (pillName) {
+        pillName.textContent = activeDatasetName || 'Random Set';
       }
       const jsonEditor = document.getElementById('json-editor');
       if (jsonEditor) {
         jsonEditor.value = JSON.stringify(activeDataset, null, 2);
       }
+      updateDatasetSelectDropdown();
+      updateDatasetRegistryUI();
+    }
+
+    function updateDatasetSelectDropdown() {
+      const select = document.getElementById('dataset-select');
+      if (!select) return;
+
+      DATASET_REGISTRY.forEach(ds => {
+        let opt = Array.from(select.options).find(o => o.value === ds.id);
+        if (!opt) {
+          opt = document.createElement('option');
+          opt.value = ds.id;
+          opt.textContent = ds.name;
+          select.appendChild(opt);
+        }
+      });
+
+      let matched = false;
+      for (let i = 0; i < select.options.length; i++) {
+        if (select.options[i].value === activeDatasetId || select.options[i].text === activeDatasetName) {
+          select.selectedIndex = i;
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) {
+        const randomOpt = Array.from(select.options).find(o => o.value === 'random');
+        if (randomOpt) randomOpt.selected = true;
+      }
+    }
+
+    function updateDatasetRegistryUI() {
+      const countEl = document.getElementById('registered-datasets-count');
+      if (countEl) {
+        countEl.textContent = `${DATASET_REGISTRY.length} Dataset${DATASET_REGISTRY.length !== 1 ? 's' : ''} Registered`;
+      }
+      const listContainer = document.getElementById('dataset-registry-list');
+      if (!listContainer) return;
+      listContainer.innerHTML = '';
+      DATASET_REGISTRY.forEach(ds => {
+        const isActive = (activeDatasetName === ds.name || activeDatasetId === ds.id);
+        const itemDiv = document.createElement('div');
+        itemDiv.className = `flex items-center justify-between p-2 rounded-lg border text-xs transition ${isActive ? 'bg-amber-100/90 border-amber-500 font-bold text-amber-950 shadow-xs' : 'bg-white border-stone-200 text-stone-800 hover:bg-stone-50'}`;
+        itemDiv.innerHTML = `
+          <div class="flex items-center gap-2 overflow-hidden mr-2">
+            <span class="w-2 h-2 rounded-full ${isActive ? 'bg-emerald-500 animate-pulse' : 'bg-stone-300'} flex-shrink-0"></span>
+            <span class="truncate font-semibold">${ds.name}</span>
+            <span class="text-[10px] text-stone-500 whitespace-nowrap">(${ds.items ? ds.items.length : 0} items)</span>
+          </div>
+          <button type="button" onclick="selectDatasetById('${ds.id}')" class="px-2.5 py-1 rounded text-[11px] font-bold ${isActive ? 'bg-amber-600 text-white' : 'bg-stone-200 hover:bg-amber-600 hover:text-white text-stone-700'} transition flex-shrink-0">
+            ${isActive ? 'Active' : 'Play Set'}
+          </button>
+        `;
+        listContainer.appendChild(itemDiv);
+      });
+    }
+
+    function selectDatasetById(id) {
+      const ds = DATASET_REGISTRY.find(d => d.id === id);
+      if (!ds) return;
+      activeDataset = [...ds.items];
+      activeDatasetName = ds.name;
+      activeDatasetId = ds.id;
+      updateActiveDatasetUI();
+      resetBoard();
+      closeDataModal();
+    }
+
+    function switchDatasetMode(mode) {
+      currentDatasetMode = mode;
+      if (mode === 'random') {
+        startRandomGame();
+        return;
+      }
+      const found = DATASET_REGISTRY.find(d => d.id === mode);
+      if (found) {
+        activeDataset = [...found.items];
+        activeDatasetName = found.name;
+        activeDatasetId = found.id;
+      } else if (mode === 'json10_exact') {
+        activeDataset = [...ATTACHED_JSON_EXACT];
+        activeDatasetName = 'Attached JSON (Exact)';
+        activeDatasetId = 'json10_exact';
+      } else if (mode === 'json10_authentic' || mode === 'authentic_10') {
+        activeDataset = [...AUTHENTIC_SET_DATASET];
+        activeDatasetName = 'Authentic Signs (10 भगवान)';
+        activeDatasetId = 'authentic_10';
+      } else if (mode === 'video_page1' || mode === 'video_set1') {
+        activeDataset = [...VIDEO_PAGE1_DATASET];
+        activeDatasetName = 'Video Set 1 (10 भगवान)';
+        activeDatasetId = 'video_set1';
+      } else if (mode === 'video_page2' || mode === 'video_set2') {
+        activeDataset = [...VIDEO_PAGE2_DATASET];
+        activeDatasetName = 'Video Set 2 (10 भगवान)';
+        activeDatasetId = 'video_set2';
+      }
+      updateActiveDatasetUI();
       resetBoard();
     }
 
@@ -1603,6 +1747,7 @@
 
     // 8. DATA & LOGO MODAL HANDLERS
     function openDataModal() {
+      updateDatasetRegistryUI();
       document.getElementById('data-modal').classList.remove('hidden');
       document.getElementById('data-modal').classList.add('flex');
     }
@@ -1636,6 +1781,49 @@
       reader.readAsText(file);
     }
 
+    async function handleMultipleJsonUpload(event) {
+      const files = event.target.files;
+      if (!files || files.length === 0) return;
+
+      let loadedCount = 0;
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        try {
+          const text = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => reject(reader.error);
+            reader.readAsText(file);
+          });
+          const parsed = JSON.parse(text);
+          if (validateDataset(parsed)) {
+            const cleanName = file.name.replace(/\.[^/.]+$/, "");
+            registerCustomDataset(cleanName, parsed);
+            loadedCount++;
+          } else if (Array.isArray(parsed)) {
+            const added = registerCustomDatasets(parsed);
+            loadedCount += added;
+          }
+        } catch (err) {
+          console.warn('Failed to parse uploaded JSON file:', file.name, err);
+        }
+      }
+
+      updateDatasetRegistryUI();
+      updateDatasetSelectDropdown();
+      if (loadedCount > 0) {
+        const latestDs = DATASET_REGISTRY[DATASET_REGISTRY.length - 1];
+        if (latestDs) {
+          activeDataset = [...latestDs.items];
+          activeDatasetName = latestDs.name;
+          activeDatasetId = latestDs.id;
+          updateActiveDatasetUI();
+          resetBoard();
+        }
+      }
+      event.target.value = '';
+    }
+
     function applyCustomJson() {
       try {
         const raw = document.getElementById('json-editor').value;
@@ -1646,7 +1834,9 @@
         activeDataset = parsed.slice(0, 10);
         activeDatasetName = 'Custom Editor Set';
         registerCustomDataset(activeDatasetName, activeDataset);
+        activeDatasetId = DATASET_REGISTRY[DATASET_REGISTRY.length - 1].id;
         currentDatasetMode = 'custom';
+        updateActiveDatasetUI();
         resetBoard();
         closeDataModal();
       } catch (err) {
@@ -1694,24 +1884,8 @@
         // Fallbacks loaded
       }
 
-      // Pick random dataset on game load
-      const randomDs = pickRandomDataset();
-      if (randomDs && Array.isArray(randomDs.items)) {
-        activeDataset = [...randomDs.items];
-        activeDatasetName = randomDs.name;
-      } else {
-        activeDataset = [...AUTHENTIC_SET_DATASET];
-        activeDatasetName = 'Authentic Signs (10 भगवान)';
-      }
-
-      const jsonEditor = document.getElementById('json-editor');
-      if (jsonEditor) {
-        jsonEditor.value = JSON.stringify(activeDataset, null, 2);
-      }
-
-      initGameBoard(activeDataset);
-      renderBoard();
-      resetTimer();
+      // Automatically picks a random dataset via startRandomGame() and updates UI indicators
+      startRandomGame();
     });
   </script>
 </body>
