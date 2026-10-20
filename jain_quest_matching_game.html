@@ -571,6 +571,7 @@
       { "godname": "महावीर भगवान", "sign": "सिंह" },
       { "godname": "मुनिसुव्रतनाथ भगवान", "sign": "कछुआ" }
     ];
+    const AUTHENTIC_SET_DATASET = ATTACHED_JSON_AUTHENTIC;
 
     // Set 1 from the video
     const VIDEO_PAGE1_DATASET = [
@@ -600,6 +601,51 @@
       { "godname": "अजितनाथ भगवान", "sign": "हाथी" }
     ];
 
+    // Multi-Dataset Pool Registry & Helper Engine
+    const DATASET_REGISTRY = [
+      { id: 'video_set1', name: 'Video Set 1 (10 भगवान)', items: VIDEO_PAGE1_DATASET, data: VIDEO_PAGE1_DATASET },
+      { id: 'video_set2', name: 'Video Set 2 (10 भगवान)', items: VIDEO_PAGE2_DATASET, data: VIDEO_PAGE2_DATASET },
+      { id: 'authentic_10', name: 'Authentic Signs (10 भगवान)', items: AUTHENTIC_SET_DATASET, data: AUTHENTIC_SET_DATASET }
+    ];
+
+    function validateDataset(data) {
+      if (!Array.isArray(data) || data.length === 0) return false;
+      return data.every(item => item && typeof item.godname === 'string' && typeof item.sign === 'string');
+    }
+
+    function pickRandomDataset() {
+      if (!DATASET_REGISTRY || DATASET_REGISTRY.length === 0) return null;
+      const idx = Math.floor(Math.random() * DATASET_REGISTRY.length);
+      const chosen = DATASET_REGISTRY[idx];
+      return {
+        id: chosen.id,
+        name: chosen.name,
+        items: chosen.items,
+        data: chosen.items
+      };
+    }
+
+    function registerCustomDataset(name, items) {
+      if (!validateDataset(items)) return false;
+      const id = `custom_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+      const datasetEntry = { id, name, items: items.slice(0, 10), data: items.slice(0, 10) };
+      DATASET_REGISTRY.push(datasetEntry);
+      return true;
+    }
+
+    function registerCustomDatasets(datasets) {
+      if (!Array.isArray(datasets)) return 0;
+      let added = 0;
+      datasets.forEach((ds) => {
+        const name = ds.name || `Custom Set ${DATASET_REGISTRY.length + 1}`;
+        const items = Array.isArray(ds.items) ? ds.items : (Array.isArray(ds.data) ? ds.data : (Array.isArray(ds) ? ds : []));
+        if (registerCustomDataset(name, items)) {
+          added++;
+        }
+      });
+      return added;
+    }
+
     // 10 unique, distinct pastel card colors (no duplicates)
     const CARD_COLORS = [
       "#f6b26b", // Tangerine
@@ -615,8 +661,9 @@
     ];
 
     // 2. STATE DEFINITIONS
-    let activeDataset = [...ATTACHED_JSON_EXACT];
-    let currentDatasetMode = 'json10_exact';
+    let activeDataset = [...VIDEO_PAGE1_DATASET];
+    let activeDatasetName = 'Video Set 1 (10 भगवान)';
+    let currentDatasetMode = 'random';
     
     // Core Game State (Single Page)
     let gameState = {
@@ -1172,16 +1219,29 @@
 
     function switchDatasetMode(mode) {
       currentDatasetMode = mode;
-      if (mode === 'json10_exact') {
+      if (mode === 'random') {
+        const randomDs = pickRandomDataset();
+        if (randomDs) {
+          activeDataset = [...randomDs.items];
+          activeDatasetName = randomDs.name;
+        }
+      } else if (mode === 'json10_exact') {
         activeDataset = [...ATTACHED_JSON_EXACT];
+        activeDatasetName = 'Attached JSON (Exact)';
       } else if (mode === 'json10_authentic') {
-        activeDataset = [...ATTACHED_JSON_AUTHENTIC];
+        activeDataset = [...AUTHENTIC_SET_DATASET];
+        activeDatasetName = 'Authentic Signs (10 भगवान)';
       } else if (mode === 'video_page1') {
         activeDataset = [...VIDEO_PAGE1_DATASET];
+        activeDatasetName = 'Video Set 1 (10 भगवान)';
       } else if (mode === 'video_page2') {
         activeDataset = [...VIDEO_PAGE2_DATASET];
+        activeDatasetName = 'Video Set 2 (10 भगवान)';
       }
-      document.getElementById('json-editor').value = JSON.stringify(activeDataset, null, 2);
+      const jsonEditor = document.getElementById('json-editor');
+      if (jsonEditor) {
+        jsonEditor.value = JSON.stringify(activeDataset, null, 2);
+      }
       resetBoard();
     }
 
@@ -1277,21 +1337,21 @@
       try {
         const raw = document.getElementById('json-editor').value;
         const parsed = JSON.parse(raw);
-        if (!Array.isArray(parsed) || parsed.length === 0) {
-          throw new Error('JSON must be a non-empty array of objects.');
+        if (!validateDataset(parsed)) {
+          throw new Error('JSON must be a non-empty array of objects with "godname" and "sign" string properties.');
         }
-        const valid = parsed.every(item => typeof item.godname === 'string' && typeof item.sign === 'string');
-        if (!valid) {
-          throw new Error('Every item must have "godname" and "sign" string properties.');
-        }
-        activeDataset = parsed;
+        activeDataset = parsed.slice(0, 10);
+        activeDatasetName = 'Custom Editor Set';
+        registerCustomDataset(activeDatasetName, activeDataset);
         currentDatasetMode = 'custom';
         resetBoard();
         closeDataModal();
       } catch (err) {
         const editor = document.getElementById('json-editor');
-        editor.classList.add('border-red-600', 'bg-red-50');
-        setTimeout(() => editor.classList.remove('border-red-600', 'bg-red-50'), 1500);
+        if (editor) {
+          editor.classList.add('border-red-600', 'bg-red-50');
+          setTimeout(() => editor.classList.remove('border-red-600', 'bg-red-50'), 1500);
+        }
       }
     }
 
@@ -1319,20 +1379,31 @@
 
     // 9. WINDOW ONLOAD INITIALIZATION
     window.addEventListener('DOMContentLoaded', async () => {
-      document.getElementById('json-editor').value = JSON.stringify(ATTACHED_JSON_EXACT, null, 2);
-
       try {
         const response = await fetch('./jain-quest.json', { cache: 'no-store' });
         if (response.ok) {
           const externalJson = await response.json();
-          if (Array.isArray(externalJson) && externalJson.length > 0 && externalJson[0].godname) {
-            document.getElementById('json-editor').value = JSON.stringify(externalJson, null, 2);
-            activeDataset = externalJson;
-            currentDatasetMode = 'custom';
+          if (validateDataset(externalJson)) {
+            registerCustomDataset('Loaded jain-quest.json', externalJson);
           }
         }
       } catch (err) {
         // Fallbacks loaded
+      }
+
+      // Pick random dataset on game load
+      const randomDs = pickRandomDataset();
+      if (randomDs && Array.isArray(randomDs.items)) {
+        activeDataset = [...randomDs.items];
+        activeDatasetName = randomDs.name;
+      } else {
+        activeDataset = [...AUTHENTIC_SET_DATASET];
+        activeDatasetName = 'Authentic Signs (10 भगवान)';
+      }
+
+      const jsonEditor = document.getElementById('json-editor');
+      if (jsonEditor) {
+        jsonEditor.value = JSON.stringify(activeDataset, null, 2);
       }
 
       initGameBoard(activeDataset);
