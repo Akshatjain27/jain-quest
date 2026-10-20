@@ -392,9 +392,9 @@
 
         <select id="dataset-select" onchange="switchDatasetMode(this.value)" class="text-xs sm:text-sm bg-amber-100 hover:bg-amber-200 text-amber-950 font-bold py-1.5 px-2.5 rounded-lg border border-amber-400 cursor-pointer focus:outline-none">
           <option value="random">🎲 Random Set</option>
-          <option value="video_page1">Video Set 1 (10 Items)</option>
-          <option value="video_page2">Video Set 2 (10 Items)</option>
-          <option value="json10_authentic">Attached JSON (Authentic Signs)</option>
+          <option value="video_set1">Video Set 1 (10 भगवान)</option>
+          <option value="video_set2">Video Set 2 (10 भगवान)</option>
+          <option value="authentic_10">Authentic Signs (10 भगवान)</option>
           <option value="json10_exact">Attached jain-quest.json (Exact)</option>
         </select>
 
@@ -696,7 +696,8 @@
     const DATASET_REGISTRY = [
       { id: 'video_set1', name: 'Video Set 1 (10 भगवान)', items: VIDEO_PAGE1_DATASET, data: VIDEO_PAGE1_DATASET },
       { id: 'video_set2', name: 'Video Set 2 (10 भगवान)', items: VIDEO_PAGE2_DATASET, data: VIDEO_PAGE2_DATASET },
-      { id: 'authentic_10', name: 'Authentic Signs (10 भगवान)', items: AUTHENTIC_SET_DATASET, data: AUTHENTIC_SET_DATASET }
+      { id: 'authentic_10', name: 'Authentic Signs (10 भगवान)', items: AUTHENTIC_SET_DATASET, data: AUTHENTIC_SET_DATASET },
+      { id: 'json10_exact', name: 'Attached jain-quest.json (Exact)', items: ATTACHED_JSON_EXACT, data: ATTACHED_JSON_EXACT }
     ];
 
     function validateDataset(data) {
@@ -706,8 +707,13 @@
 
     function pickRandomDataset() {
       if (!DATASET_REGISTRY || DATASET_REGISTRY.length === 0) return null;
-      const idx = Math.floor(Math.random() * DATASET_REGISTRY.length);
-      const chosen = DATASET_REGISTRY[idx];
+      let candidates = DATASET_REGISTRY;
+      if (DATASET_REGISTRY.length > 1 && typeof activeDatasetId !== 'undefined' && activeDatasetId) {
+        candidates = DATASET_REGISTRY.filter(d => d.id !== activeDatasetId);
+        if (candidates.length === 0) candidates = DATASET_REGISTRY;
+      }
+      const idx = Math.floor(Math.random() * candidates.length);
+      const chosen = candidates[idx];
       return {
         id: chosen.id,
         name: chosen.name,
@@ -993,7 +999,7 @@
 
       gameState = {
         cards,
-        poolCardIds: cards.map(c => c.id),
+        poolCardIds: shuffleArray(cards.map(c => c.id)),
         slots,
         submitted: false,
         score: 0
@@ -1189,6 +1195,15 @@
         } else {
           showAnsBtn.classList.add('hidden');
         }
+      }
+
+      const newGameBtn = document.getElementById('new-game-btn');
+      if (newGameBtn) {
+        newGameBtn.disabled = isEvaluating;
+      }
+      const datasetSelect = document.getElementById('dataset-select');
+      if (datasetSelect) {
+        datasetSelect.disabled = isEvaluating;
       }
     }
 
@@ -1534,6 +1549,7 @@
     }
 
     function startRandomGame() {
+      if (isEvaluating) return;
       if (confettiAnimationId) {
         cancelAnimationFrame(confettiAnimationId);
         confettiAnimationId = null;
@@ -1573,6 +1589,7 @@
       const select = document.getElementById('dataset-select');
       if (!select) return;
 
+      // Add missing datasets from registry
       DATASET_REGISTRY.forEach(ds => {
         let opt = Array.from(select.options).find(o => o.value === ds.id);
         if (!opt) {
@@ -1580,6 +1597,18 @@
           opt.value = ds.id;
           opt.textContent = ds.name;
           select.appendChild(opt);
+        } else {
+          if (ds.name) opt.textContent = ds.name;
+        }
+      });
+
+      // Deduplicate options by value to prevent any duplicate entries
+      const seenValues = new Set();
+      Array.from(select.options).forEach(opt => {
+        if (seenValues.has(opt.value)) {
+          opt.remove();
+        } else {
+          seenValues.add(opt.value);
         }
       });
 
@@ -1624,6 +1653,7 @@
     }
 
     function selectDatasetById(id) {
+      if (isEvaluating) return;
       const ds = DATASET_REGISTRY.find(d => d.id === id);
       if (!ds) return;
       activeDataset = [...ds.items];
@@ -1635,6 +1665,7 @@
     }
 
     function switchDatasetMode(mode) {
+      if (isEvaluating) return;
       currentDatasetMode = mode;
       if (mode === 'random') {
         startRandomGame();
@@ -1647,7 +1678,7 @@
         activeDatasetId = found.id;
       } else if (mode === 'json10_exact') {
         activeDataset = [...ATTACHED_JSON_EXACT];
-        activeDatasetName = 'Attached JSON (Exact)';
+        activeDatasetName = 'Attached jain-quest.json (Exact)';
         activeDatasetId = 'json10_exact';
       } else if (mode === 'json10_authentic' || mode === 'authentic_10') {
         activeDataset = [...AUTHENTIC_SET_DATASET];
@@ -1861,6 +1892,14 @@
     function showResultModal() {
       document.getElementById('final-score-text').textContent = `${gameState.score} / ${gameState.cards.length}`;
       document.getElementById('final-time-text').textContent = document.getElementById('timer-display').textContent;
+      const subtitleEl = document.getElementById('result-subtitle');
+      if (subtitleEl) {
+        if (gameState.score === gameState.cards.length && gameState.cards.length > 0) {
+          subtitleEl.textContent = 'शानदार! आपने सभी 10 सही उत्तर दिए हैं। 🌟';
+        } else {
+          subtitleEl.textContent = "अच्छा प्रयास! सही उत्तर देखने के लिए 'Show Correct Answers' दबाएँ।";
+        }
+      }
       document.getElementById('result-modal').classList.remove('hidden');
       document.getElementById('result-modal').classList.add('flex');
     }

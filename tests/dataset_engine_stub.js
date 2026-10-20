@@ -37,10 +37,24 @@ const AUTHENTIC_SET_DATASET = [
   { "godname": "मुनिसुव्रतनाथ भगवान", "sign": "कछुआ" }
 ];
 
+const ATTACHED_JSON_EXACT = [
+  { "godname": "कुंथुनाथ भगवान", "sign": "स्वस्तिक" },
+  { "godname": "विमलनाथ भगवान", "sign": "हिरण" },
+  { "godname": "धर्मनाथ भगवान", "sign": "बकरा" },
+  { "godname": "अजितनाथ भगवान", "sign": "शूकर" },
+  { "godname": "आदिनाथ भगवान", "sign": "वज्रदंड" },
+  { "godname": "सुपार्श्वनाथ भगवान", "sign": "कछुआ" },
+  { "godname": "पुष्पदंत भगवान", "sign": "सिंह" },
+  { "godname": "शांतिनाथ भगवान", "sign": "मगर" },
+  { "godname": "महावीर भगवान", "sign": "बैल" },
+  { "godname": "मुनिसुव्रतनाथ भगवान", "sign": "हाथी" }
+];
+
 const DATASET_REGISTRY = [
   { id: 'video_set1', name: 'Video Set 1 (10 भगवान)', items: VIDEO_PAGE1_DATASET },
   { id: 'video_set2', name: 'Video Set 2 (10 भगवान)', items: VIDEO_PAGE2_DATASET },
-  { id: 'authentic_10', name: 'Authentic Signs (10 भगवान)', items: AUTHENTIC_SET_DATASET }
+  { id: 'authentic_10', name: 'Authentic Signs (10 भगवान)', items: AUTHENTIC_SET_DATASET },
+  { id: 'json10_exact', name: 'Attached jain-quest.json (Exact)', items: ATTACHED_JSON_EXACT }
 ];
 
 function validateDataset(data) {
@@ -77,6 +91,7 @@ module.exports = {
   VIDEO_PAGE1_DATASET,
   VIDEO_PAGE2_DATASET,
   AUTHENTIC_SET_DATASET,
+  ATTACHED_JSON_EXACT,
   DATASET_REGISTRY,
   pickRandomDataset,
   validateDataset,
