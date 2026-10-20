@@ -199,6 +199,11 @@
       box-shadow: 0 16px 32px rgba(0,0,0,0.35);
     }
 
+    /* Mobile Cards Dock auto-collapsed state when all cards placed */
+    .dock-minimized {
+      transform: translateY(calc(100% - 34px)) !important;
+    }
+
     /* Custom Scrollbar for Modals */
     ::-webkit-scrollbar {
       width: 8px;
@@ -727,6 +732,7 @@
     };
 
     let selectedCardId = null;
+    let lastPlacedCardId = null;
     let timerSeconds = 0;
     let timerInterval = null;
     let isPaused = false;
@@ -874,7 +880,9 @@
       };
 
       selectedCardId = null;
+      lastPlacedCardId = null;
       updateScoreDisplay();
+      updateUnplacedBadge();
     }
 
     function formatGodnameLines(name) {
@@ -895,115 +903,172 @@
       return `<div>${sign}</div>`;
     }
 
-    // 5. RENDERING BOARD
-    function renderBoard() {
-      // 1. Render Left Pool
-      const leftGrid = document.getElementById('left-pool-grid');
-      leftGrid.innerHTML = '';
+    // 5. RENDERING BOARD & INTERACTION ENGINE
+    function updateUnplacedBadge() {
+      const badge = document.getElementById('unplaced-badge');
+      const dock = document.getElementById('mobile-cards-dock');
+      const toggleText = document.getElementById('dock-toggle-text');
+      const count = (gameState && gameState.poolCardIds) ? gameState.poolCardIds.length : 0;
 
-      gameState.poolCardIds.forEach(cardId => {
-        const card = gameState.cards.find(c => c.id === cardId);
-        if (!card) return;
-        const cardEl = createCardElement(card, 'pool', null);
-        leftGrid.appendChild(cardEl);
-      });
+      if (badge) {
+        badge.innerHTML = `✨ ${count} शेष (${count} unplaced)`;
+      }
 
-      leftGrid.ondragover = (e) => {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-      };
-      leftGrid.ondrop = (e) => {
-        e.preventDefault();
-        if (isEvaluating || gameState.submitted) return;
-        const draggedCardId = e.dataTransfer.getData('text/plain');
-        if (draggedCardId) {
-          moveCardToPool(draggedCardId);
-        }
-      };
-
-      leftGrid.onclick = (e) => {
-        if (e.target === leftGrid && selectedCardId) {
-          selectedCardId = null;
-          renderBoard();
-        }
-      };
-
-      // 2. Render Right Targets
-      const rightGrid = document.getElementById('right-targets-grid');
-      rightGrid.innerHTML = '';
-
-      gameState.slots.forEach((slot, sIdx) => {
-        const rowWrapper = document.createElement('div');
-        rowWrapper.className = 'flex items-center gap-3 sm:gap-4 h-[64px] sm:h-[84px] lg:h-[96px]';
-
-        const dropBox = document.createElement('div');
-        dropBox.className = `drop-slot w-[130px] sm:w-[155px] lg:w-[170px] h-full flex-shrink-0 ${slot.placedCardId ? 'filled' : ''}`;
-        dropBox.dataset.slotIndex = sIdx;
-
-        if (slot.placedCardId) {
-          const placedCard = gameState.cards.find(c => c.id === slot.placedCardId);
-          if (placedCard) {
-            const cardEl = createCardElement(placedCard, 'slot', slot);
-            dropBox.appendChild(cardEl);
+      if (dock) {
+        if (count === 0) {
+          dock.classList.add('dock-minimized');
+          if (toggleText) toggleText.textContent = 'Show Cards ▲';
+        } else {
+          dock.classList.remove('dock-minimized');
+          if (toggleText) {
+            toggleText.textContent = isDockExpanded ? 'Collapse Tray ▼' : 'Expand Tray ▲';
           }
         }
+      }
+    }
 
-        dropBox.addEventListener('click', (ev) => {
+    function renderBoard() {
+      // 1. Render Left Pool (Desktop)
+      const leftGrid = document.getElementById('left-pool-grid');
+      if (leftGrid) {
+        leftGrid.innerHTML = '';
+        gameState.poolCardIds.forEach(cardId => {
+          const card = gameState.cards.find(c => c.id === cardId);
+          if (!card) return;
+          const cardEl = createCardElement(card, 'pool', null);
+          leftGrid.appendChild(cardEl);
+        });
+
+        leftGrid.ondragover = (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+        };
+        leftGrid.ondrop = (e) => {
+          e.preventDefault();
           if (isEvaluating || gameState.submitted) return;
-          if (selectedCardId && !slot.placedCardId) {
-            ev.stopPropagation();
+          const draggedCardId = e.dataTransfer.getData('text/plain') || selectedCardId;
+          if (draggedCardId) {
+            moveCardToPool(draggedCardId);
+          }
+        };
+        leftGrid.onclick = (e) => {
+          if (e.target === leftGrid && selectedCardId) {
+            selectedCardId = null;
+            renderBoard();
+          }
+        };
+      }
+
+      // 2. Render Mobile Bottom Dock Cards (Mobile / Tablet)
+      const mobileDockCards = document.getElementById('mobile-dock-cards');
+      if (mobileDockCards) {
+        mobileDockCards.innerHTML = '';
+        gameState.poolCardIds.forEach(cardId => {
+          const card = gameState.cards.find(c => c.id === cardId);
+          if (!card) return;
+          const cardEl = createCardElement(card, 'dock', null);
+          mobileDockCards.appendChild(cardEl);
+        });
+
+        mobileDockCards.ondragover = (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+        };
+        mobileDockCards.ondrop = (e) => {
+          e.preventDefault();
+          if (isEvaluating || gameState.submitted) return;
+          const draggedCardId = e.dataTransfer.getData('text/plain') || selectedCardId;
+          if (draggedCardId) {
+            moveCardToPool(draggedCardId);
+          }
+        };
+      }
+
+      // 3. Synchronize Unplaced Counter Badge & Auto-Dock Collapse
+      updateUnplacedBadge();
+
+      // 4. Render Right Targets
+      const rightGrid = document.getElementById('right-targets-grid');
+      if (rightGrid) {
+        rightGrid.innerHTML = '';
+
+        gameState.slots.forEach((slot, sIdx) => {
+          const rowWrapper = document.createElement('div');
+          rowWrapper.className = 'flex items-center gap-3 sm:gap-4 h-[64px] sm:h-[84px] lg:h-[96px]';
+
+          const dropBox = document.createElement('div');
+          dropBox.className = `drop-slot w-[130px] sm:w-[155px] lg:w-[170px] h-full flex-shrink-0 ${slot.placedCardId ? 'filled' : ''}`;
+          dropBox.dataset.slotIndex = sIdx;
+
+          if (slot.placedCardId) {
+            const placedCard = gameState.cards.find(c => c.id === slot.placedCardId);
+            if (placedCard) {
+              const cardEl = createCardElement(placedCard, 'slot', slot);
+              dropBox.appendChild(cardEl);
+            }
+          }
+
+          dropBox.addEventListener('click', (ev) => {
+            if (isEvaluating || gameState.submitted) return;
+            if (selectedCardId && !slot.placedCardId) {
+              ev.stopPropagation();
+              const cardToPlace = selectedCardId;
+              selectedCardId = null;
+              placeCardInSlot(cardToPlace, sIdx);
+            }
+          });
+
+          dropBox.addEventListener('dragover', (e) => {
+            if (isEvaluating || gameState.submitted) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            dropBox.classList.add('drag-over');
+          });
+          dropBox.addEventListener('dragleave', () => {
+            dropBox.classList.remove('drag-over');
+          });
+          dropBox.addEventListener('drop', (e) => {
+            if (isEvaluating || gameState.submitted) return;
+            e.preventDefault();
+            dropBox.classList.remove('drag-over');
+            const draggedCardId = e.dataTransfer.getData('text/plain') || selectedCardId;
+            if (draggedCardId) {
+              selectedCardId = null;
+              placeCardInSlot(draggedCardId, sIdx);
+            }
+          });
+
+          const signLabel = document.createElement('div');
+          signLabel.className = 'sign-label text-2xl sm:text-3xl lg:text-[36px] select-none flex-1 text-left pl-1 cursor-pointer';
+          signLabel.innerHTML = formatSignLines(slot.sign);
+
+          signLabel.addEventListener('click', () => {
+            if (isEvaluating || gameState.submitted || !selectedCardId) return;
             const cardToPlace = selectedCardId;
             selectedCardId = null;
             placeCardInSlot(cardToPlace, sIdx);
-          }
-        });
+          });
 
-        dropBox.addEventListener('dragover', (e) => {
-          if (isEvaluating || gameState.submitted) return;
-          e.preventDefault();
-          e.dataTransfer.dropEffect = 'move';
-          dropBox.classList.add('drag-over');
+          rowWrapper.appendChild(dropBox);
+          rowWrapper.appendChild(signLabel);
+          rightGrid.appendChild(rowWrapper);
         });
-        dropBox.addEventListener('dragleave', () => {
-          dropBox.classList.remove('drag-over');
-        });
-        dropBox.addEventListener('drop', (e) => {
-          if (isEvaluating || gameState.submitted) return;
-          e.preventDefault();
-          dropBox.classList.remove('drag-over');
-          const draggedCardId = e.dataTransfer.getData('text/plain') || selectedCardId;
-          if (draggedCardId) {
-            selectedCardId = null;
-            placeCardInSlot(draggedCardId, sIdx);
-          }
-        });
-
-        const signLabel = document.createElement('div');
-        signLabel.className = 'sign-label text-2xl sm:text-3xl lg:text-[36px] select-none flex-1 text-left pl-1 cursor-pointer';
-        signLabel.innerHTML = formatSignLines(slot.sign);
-
-        signLabel.addEventListener('click', () => {
-          if (isEvaluating || gameState.submitted || !selectedCardId) return;
-          const cardToPlace = selectedCardId;
-          selectedCardId = null;
-          placeCardInSlot(cardToPlace, sIdx);
-        });
-
-        rowWrapper.appendChild(dropBox);
-        rowWrapper.appendChild(signLabel);
-        rightGrid.appendChild(rowWrapper);
-      });
+      }
 
       // Submit & Show Buttons
       const submitBtn = document.getElementById('submit-btn');
       const showAnsBtn = document.getElementById('show-answers-btn');
-      const anyPlaced = gameState.slots.some(s => s.placedCardId !== null);
+      const anyPlaced = gameState.slots && gameState.slots.some(s => s.placedCardId !== null);
 
-      submitBtn.disabled = (!anyPlaced || gameState.submitted || isEvaluating);
-      if (gameState.submitted) {
-        showAnsBtn.classList.remove('hidden');
-      } else {
-        showAnsBtn.classList.add('hidden');
+      if (submitBtn) {
+        submitBtn.disabled = (!anyPlaced || gameState.submitted || isEvaluating);
+      }
+      if (showAnsBtn) {
+        if (gameState.submitted) {
+          showAnsBtn.classList.remove('hidden');
+        } else {
+          showAnsBtn.classList.add('hidden');
+        }
       }
     }
 
@@ -1011,13 +1076,26 @@
       const div = document.createElement('div');
       const isSelected = (selectedCardId === card.id);
       const isWrong = (slotObj && slotObj.evalStatus === 'wrong');
+      const isSnap = (lastPlacedCardId === card.id);
 
-      div.className = `game-card w-full h-[64px] sm:h-[84px] lg:h-[96px] text-lg sm:text-xl lg:text-[23px] ${isSelected ? 'selected-card' : ''} ${isWrong ? 'card-wrong' : ''}`;
+      let sizeClasses = 'w-full h-[64px] sm:h-[84px] lg:h-[96px] text-lg sm:text-xl lg:text-[23px]';
+      if (location === 'dock') {
+        sizeClasses = 'min-w-[120px] sm:min-w-[140px] h-[58px] sm:h-[68px] text-base sm:text-lg flex-shrink-0';
+      }
+
+      div.className = `game-card ${sizeClasses} cursor-pointer select-none ${isSelected ? 'selected-card' : ''} ${isWrong ? 'card-wrong' : ''} ${isSnap ? 'snap-pop' : ''}`;
       div.style.backgroundColor = card.color;
       div.dataset.cardId = card.id;
       div.draggable = (!gameState.submitted && !isEvaluating);
 
       div.innerHTML = formatGodnameLines(card.godname);
+
+      if (isSnap) {
+        div.addEventListener('animationend', () => {
+          div.classList.remove('snap-pop');
+          if (lastPlacedCardId === card.id) lastPlacedCardId = null;
+        }, { once: true });
+      }
 
       if (slotObj && slotObj.evalStatus) {
         const badge = document.createElement('div');
@@ -1081,8 +1159,9 @@
       });
 
       div.addEventListener('pointerdown', (e) => {
-        if (e.pointerType !== 'touch') return;
-        handleTouchDrag(e, card);
+        if (e.pointerType === 'touch' || e.pointerType === 'pen') {
+          handleTouchDrag(e, card);
+        }
       });
 
       return div;
@@ -1096,32 +1175,48 @@
       const startY = e.clientY;
       let isDragging = false;
 
+      if (e.target && e.target.setPointerCapture) {
+        try { e.target.setPointerCapture(e.pointerId); } catch (_) {}
+      }
+
       const onTouchMove = (me) => {
-        if (!isDragging && Math.hypot(me.clientX - startX, me.clientY - startY) > 10) {
+        if (!isDragging && Math.hypot(me.clientX - startX, me.clientY - startY) > 8) {
           isDragging = true;
           selectedCardId = null;
           playSound('pickup');
-          ghost.style.display = 'flex';
-          ghost.style.backgroundColor = card.color;
-          ghost.innerHTML = formatGodnameLines(card.godname);
+          if (ghost) {
+            ghost.style.display = 'flex';
+            ghost.style.backgroundColor = card.color;
+            ghost.innerHTML = formatGodnameLines(card.godname);
+          }
         }
 
         if (isDragging) {
-          ghost.style.left = `${me.clientX}px`;
-          ghost.style.top = `${me.clientY}px`;
+          if (me.cancelable) me.preventDefault();
+          if (ghost) {
+            ghost.style.left = `${me.clientX}px`;
+            ghost.style.top = `${me.clientY}px`;
+          }
         }
       };
 
       const onTouchEnd = (ue) => {
         window.removeEventListener('pointermove', onTouchMove);
         window.removeEventListener('pointerup', onTouchEnd);
-        ghost.style.display = 'none';
+        window.removeEventListener('pointercancel', onTouchEnd);
+
+        if (e.target && e.target.releasePointerCapture) {
+          try { e.target.releasePointerCapture(e.pointerId); } catch (_) {}
+        }
+
+        if (ghost) ghost.style.display = 'none';
 
         if (isDragging) {
           selectedCardId = null;
           const dropTarget = document.elementFromPoint(ue.clientX, ue.clientY);
-          const slotEl = dropTarget ? dropTarget.closest('.drop-slot') : null;
-          const poolEl = dropTarget ? dropTarget.closest('#left-pool-grid') : null;
+          const slotRow = dropTarget ? dropTarget.closest('#right-targets-grid > div') : null;
+          const slotEl = dropTarget ? dropTarget.closest('.drop-slot') : (slotRow ? slotRow.querySelector('.drop-slot') : null);
+          const poolEl = dropTarget ? (dropTarget.closest('#left-pool-grid') || dropTarget.closest('#mobile-dock-cards') || dropTarget.closest('#mobile-cards-dock')) : null;
 
           if (slotEl && slotEl.dataset.slotIndex !== undefined) {
             placeCardInSlot(card.id, parseInt(slotEl.dataset.slotIndex, 10));
@@ -1133,8 +1228,9 @@
         }
       };
 
-      window.addEventListener('pointermove', onTouchMove);
+      window.addEventListener('pointermove', onTouchMove, { passive: false });
       window.addEventListener('pointerup', onTouchEnd);
+      window.addEventListener('pointercancel', onTouchEnd);
     }
 
     function placeCardInSlot(cardId, targetSlotIndex) {
@@ -1163,13 +1259,18 @@
 
       if (displacedCardId) {
         if (prevSlot) {
+          // Swap: displaced card into previous slot
           prevSlot.placedCardId = displacedCardId;
         } else {
-          gameState.poolCardIds.push(displacedCardId);
+          // Displace back into pool
+          if (!gameState.poolCardIds.includes(displacedCardId)) {
+            gameState.poolCardIds.push(displacedCardId);
+          }
         }
       }
 
       targetSlot.placedCardId = cardId;
+      lastPlacedCardId = cardId;
       playSound('drop');
       renderBoard();
     }
@@ -1353,9 +1454,17 @@
     // Mobile Dock Drawer Toggling
     let isDockExpanded = false;
     function toggleDockExpand(forceExpand = null) {
+      const dock = document.getElementById('mobile-cards-dock');
       const dockCards = document.getElementById('mobile-dock-cards');
       const toggleText = document.getElementById('dock-toggle-text');
-      if (!dockCards) return;
+      if (!dockCards || !dock) return;
+
+      if (dock.classList.contains('dock-minimized')) {
+        dock.classList.remove('dock-minimized');
+        if (toggleText) toggleText.textContent = isDockExpanded ? 'Collapse Tray ▼' : 'Expand Tray ▲';
+        return;
+      }
+
       isDockExpanded = forceExpand !== null ? forceExpand : !isDockExpanded;
       if (isDockExpanded) {
         dockCards.classList.remove('overflow-x-auto', 'flex-nowrap');
