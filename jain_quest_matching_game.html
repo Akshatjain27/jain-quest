@@ -841,6 +841,174 @@
        ========================================================================= -->
   <script>
     // 1. DATASETS
+    // Bundled from set-1.json (20 items)
+    const SET_1_SOURCE = [
+      {
+        "question": "कुंथुनाथ भगवान",
+        "answer": "बकरा"
+      },
+      {
+        "question": "विमलनाथ भगवान",
+        "answer": "शूकर"
+      },
+      {
+        "question": "धर्मनाथ भगवान",
+        "answer": "वज्रदंड"
+      },
+      {
+        "question": "अजितनाथ भगवान",
+        "answer": "हाथी"
+      },
+      {
+        "question": "आदिनाथ भगवान",
+        "answer": "बैल"
+      },
+      {
+        "question": "सुपार्श्वनाथ भगवान",
+        "answer": "स्वस्तिक"
+      },
+      {
+        "question": "पुष्पदंत भगवान",
+        "answer": "मगर"
+      },
+      {
+        "question": "शांतिनाथ भगवान",
+        "answer": "हिरण"
+      },
+      {
+        "question": "महावीर भगवान",
+        "answer": "सिंह"
+      },
+      {
+        "question": "मुनिसुव्रतनाथ भगवान",
+        "answer": "कछुआ"
+      },
+      {
+        "question": "संभवनाथ भगवान",
+        "answer": "घोड़ा"
+      },
+      {
+        "question": "सुमतिनाथ भगवान",
+        "answer": "चकवा"
+      },
+      {
+        "question": "श्रेयांसनाथ भगवान",
+        "answer": "गैंडा"
+      },
+      {
+        "question": "अनंतनाथ भगवान",
+        "answer": "सेही"
+      },
+      {
+        "question": "पद्मप्रभ भगवान",
+        "answer": "कमल"
+      },
+      {
+        "question": "शीतलनाथ भगवान",
+        "answer": "कल्पवृक्ष"
+      },
+      {
+        "question": "शांतिनाथ भगवान",
+        "answer": "मगर"
+      },
+      {
+        "question": "वासुपूज्य भगवान",
+        "answer": "भैंसा"
+      },
+      {
+        "question": "चन्द्रप्रभ भगवान",
+        "answer": "चन्द्रमा"
+      },
+      {
+        "question": "अभिनंदननाथ भगवान",
+        "answer": "बंदर"
+      }
+    ];
+
+    // Bundled from set-2.json (20 items)
+    const SET_2_SOURCE = [
+      {
+        "question": "कुंथुनाथ",
+        "answer": "सम्मेद शिखर"
+      },
+      {
+        "question": "महावीर",
+        "answer": "पावापुर"
+      },
+      {
+        "question": "वासुपूज्य",
+        "answer": "चंपापुर"
+      },
+      {
+        "question": "नेमिनाथ",
+        "answer": "गिरनार"
+      },
+      {
+        "question": "ऋषभनाथ",
+        "answer": "कैलाश पर्वत"
+      },
+      {
+        "question": "बाहुबलि",
+        "answer": "पोदनपुर"
+      },
+      {
+        "question": "राम",
+        "answer": "तुंगीगिरी"
+      },
+      {
+        "question": "गुरुदत्त मुनि",
+        "answer": "द्रोणागिरी"
+      },
+      {
+        "question": "लव-कुश",
+        "answer": "पावागढ"
+      },
+      {
+        "question": "युधिष्ठिर",
+        "answer": "शत्रुंजय"
+      },
+      {
+        "question": "आचार्य कुंदकुंद",
+        "answer": "नियमसार"
+      },
+      {
+        "question": "आचार्य पुष्पदंत",
+        "answer": "षटखंडागम"
+      },
+      {
+        "question": "आचार्य उमास्वामी",
+        "answer": "तत्त्वार्थसूत्र"
+      },
+      {
+        "question": "आचार्य पूज्यपाद",
+        "answer": "सर्वार्थसिद्धि"
+      },
+      {
+        "question": "आचार्य यतिवृषभ",
+        "answer": "तिलोय पण्णत्ति"
+      },
+      {
+        "question": "आचार्य रविषेण",
+        "answer": "पद्मपुराण"
+      },
+      {
+        "question": "आचार्य जिनसेन",
+        "answer": "हरिवंश पुराण"
+      },
+      {
+        "question": "आचार्य समंतभद्र",
+        "answer": "आप्त मीमांसा"
+      },
+      {
+        "question": "आचार्य विद्यानंदी",
+        "answer": "आप्त परीक्षा"
+      },
+      {
+        "question": "आचार्य नेमिचंद्र",
+        "answer": "गोम्मटसार"
+      }
+    ];
+
     // Exact 10 items from user's attached jain-quest.json
     const ATTACHED_JSON_EXACT = [
       { "godname": "कुंथुनाथ भगवान", "sign": "स्वस्तिक" },
@@ -908,7 +1076,10 @@
 
     function validateDataset(data) {
       if (!Array.isArray(data) || data.length === 0) return false;
-      return data.every(item => item && typeof item.godname === 'string' && typeof item.sign === 'string');
+      return data.every(item => item && (
+        (typeof item.question === 'string' && typeof item.answer === 'string') ||
+        (typeof item.godname === 'string' && typeof item.sign === 'string')
+      ));
     }
 
     function pickRandomDataset() {
@@ -1042,7 +1213,23 @@
       ]
     };
     
+    const SET_1_GAME_20 = {
+      id: 'set_1',
+      name: 'Set 1 (तीर्थंकर एवं चिह्न)',
+      page1: SET_1_SOURCE.slice(0, 10),
+      page2: SET_1_SOURCE.slice(10, 20)
+    };
+    
+    const SET_2_GAME_20 = {
+      id: 'set_2',
+      name: 'Set 2 (निर्वाण क्षेत्र एवं ग्रंथ)',
+      page1: SET_2_SOURCE.slice(0, 10),
+      page2: SET_2_SOURCE.slice(10, 20)
+    };
+    
     const GAME_SETS_20 = [
+      SET_1_GAME_20,
+      SET_2_GAME_20,
       SET_1_VIDEO_COMBINED,
       SET_2_CANONICAL,
       SET_3_AUTHENTIC_MIX
@@ -1317,18 +1504,26 @@
     function initGameBoard(dataset) {
       const slice = (dataset && Array.isArray(dataset)) ? dataset.slice(0, 10) : [];
 
-      const cards = slice.map((item, idx) => ({
-        id: `card_${idx}`,
-        godname: (item.godname || '').trim(),
-        correctSign: (item.sign || '').trim(),
-        color: CARD_COLORS[idx % CARD_COLORS.length]
-      }));
+      const cards = slice.map((item, idx) => {
+        const questionText = (item.question || item.godname || '').trim();
+        const answerText = (item.answer || item.sign || '').trim();
+        return {
+          id: `card_${idx}`,
+          question: questionText,
+          answer: answerText,
+          correctAnswer: answerText,
+          godname: questionText,
+          correctSign: answerText,
+          color: CARD_COLORS[idx % CARD_COLORS.length]
+        };
+      });
 
-      const shuffledSigns = shuffleArray(slice.map(item => (item.sign || '').trim()));
+      const shuffledAnswers = shuffleArray(slice.map(item => (item.answer || item.sign || '').trim()));
 
-      const slots = shuffledSigns.map((signText, sIdx) => ({
+      const slots = shuffledAnswers.map((answerText, sIdx) => ({
         slotId: `slot_${sIdx}`,
-        sign: signText,
+        answer: answerText,
+        sign: answerText,
         placedCardId: null,
         evalStatus: null
       }));
@@ -1381,22 +1576,24 @@
     }
 
     function formatGodnameLines(name) {
-      const parts = name.trim().split(/\s+/);
+      const parts = (name || '').trim().split(/\s+/);
       if (parts.length >= 2) {
         const firstLine = parts.slice(0, -1).join(' ');
         const secondLine = parts[parts.length - 1];
         return `<div>${firstLine}</div><div>${secondLine}</div>`;
       }
-      return `<div>${name}</div>`;
+      return `<div>${name || ''}</div>`;
     }
+    const formatQuestionLines = formatGodnameLines;
 
     function formatSignLines(sign) {
-      const parts = sign.trim().split(/\s+/);
+      const parts = (sign || '').trim().split(/\s+/);
       if (parts.length >= 2) {
         return parts.map(p => `<div>${p}</div>`).join('');
       }
-      return `<div>${sign}</div>`;
+      return `<div>${sign || ''}</div>`;
     }
+    const formatAnswerLines = formatSignLines;
 
     // 5. RENDERING BOARD & INTERACTION ENGINE
     function updateUnplacedBadge() {
@@ -1535,7 +1732,7 @@
 
           const signLabel = document.createElement('div');
           signLabel.className = 'sign-label text-2xl sm:text-3xl lg:text-[36px] select-none flex-1 text-left pl-1 cursor-pointer';
-          signLabel.innerHTML = formatSignLines(slot.sign);
+          signLabel.innerHTML = formatAnswerLines(slot.answer || slot.sign);
 
           signLabel.addEventListener('click', () => {
             if (isEvaluating || gameState.submitted || slot.evalStatus === 'correct' || !selectedCardId) return;
@@ -1594,7 +1791,7 @@
       div.dataset.cardId = card.id;
       div.draggable = (!gameState.submitted && !isEvaluating && !isCorrect);
 
-      div.innerHTML = formatGodnameLines(card.godname);
+      div.innerHTML = formatQuestionLines(card.question || card.godname);
 
       if (isSnap) {
         div.addEventListener('animationend', () => {
@@ -1695,7 +1892,7 @@
           if (ghost) {
             ghost.style.display = 'flex';
             ghost.style.backgroundColor = card.color;
-            ghost.innerHTML = formatGodnameLines(card.godname);
+            ghost.innerHTML = formatQuestionLines(card.question || card.godname);
           }
         }
 
@@ -1754,7 +1951,7 @@
       selectedCardId = null;
 
       // 1. Correct Match
-      if (card.correctSign === targetSlot.sign) {
+      if ((card.correctAnswer || card.correctSign) === (targetSlot.answer || targetSlot.sign)) {
         targetSlot.placedCardId = card.id;
         targetSlot.evalStatus = 'correct';
         lastPlacedCardId = card.id;
@@ -1909,7 +2106,7 @@
         }
 
         const placedCard = gameState.cards.find(c => c.id === slot.placedCardId);
-        if (placedCard && placedCard.correctSign === slot.sign) {
+        if (placedCard && ((placedCard.correctAnswer || placedCard.correctSign) === (slot.answer || slot.sign))) {
           slot.evalStatus = 'correct';
           correctCount++;
           gameState.score = correctCount;
@@ -1948,7 +2145,7 @@
 
       gameState.poolCardIds = [];
       gameState.slots.forEach(slot => {
-        const matchingCard = gameState.cards.find(c => c.correctSign === slot.sign);
+        const matchingCard = gameState.cards.find(c => (c.correctAnswer || c.correctSign) === (slot.answer || slot.sign));
         if (matchingCard) {
           slot.placedCardId = matchingCard.id;
           slot.evalStatus = 'correct';
