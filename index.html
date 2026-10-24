@@ -1,0 +1,1931 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Jain Quest - जैन कोष (Tirthankara Sign Matching Game)</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts for Devanagari & UI Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800&family=Noto+Sans+Devanagari:wght@500;600;700;800&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --card-radius: 12px;
+      --card-border: 2.5px solid #222222;
+    }
+
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Noto Sans Devanagari', 'Nunito', sans-serif;
+      overflow-x: hidden;
+      background-color: #d8c3a5;
+    }
+
+    .font-cinzel {
+      font-family: 'Cinzel', serif;
+    }
+
+    /* Wordwall-style Classroom Card Aesthetics */
+    .game-card {
+      border: var(--card-border);
+      border-radius: var(--card-radius);
+      box-shadow: 0 4px 0 rgba(0, 0, 0, 0.22), 0 6px 12px rgba(0, 0, 0, 0.12);
+      transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.15s ease, background-color 0.25s ease;
+      cursor: grab;
+      touch-action: manipulation;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      line-height: 1.25;
+      padding: 6px 8px;
+      font-weight: 700;
+      color: #111;
+    }
+
+    .game-card:hover {
+      transform: translateY(-2px) scale(1.015);
+      box-shadow: 0 6px 0 rgba(0, 0, 0, 0.25), 0 10px 16px rgba(0, 0, 0, 0.15);
+    }
+
+    .game-card:active {
+      cursor: grabbing;
+    }
+
+    .game-card.dragging {
+      opacity: 0.45;
+      cursor: grabbing;
+    }
+
+    .game-card.selected-card, .selected-card {
+      outline: 4px solid #f59e0b;
+      outline-offset: 3px;
+      transform: translateY(-3px) scale(1.03);
+      box-shadow: 0 8px 16px rgba(245, 158, 11, 0.45);
+      cursor: pointer;
+    }
+
+    /* Incorrect greyed out state matching the source video */
+    .game-card.card-wrong {
+      background: #8e8e8e !important;
+      color: #1a1a1a !important;
+      border-color: #3a3a3a !important;
+    }
+
+    /* Drop Box Target Styling */
+    .drop-slot {
+      background-color: rgba(255, 255, 255, 0.95);
+      border: 2.5px solid #2b2b2b;
+      border-radius: var(--card-radius);
+      box-shadow: inset 0 3px 6px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0,0,0,0.08);
+      transition: all 0.18s ease;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .drop-slot.drag-over {
+      background-color: #fef3c7;
+      border-color: #d97706;
+      transform: scale(1.03);
+      box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.35);
+    }
+
+    .drop-slot.filled {
+      background-color: transparent;
+      border-color: transparent;
+      box-shadow: none;
+    }
+
+    /* Evaluation Badge Pop Animation */
+    @keyframes badge-pop {
+      0% { transform: scale(0.2); opacity: 0; }
+      60% { transform: scale(1.45); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .eval-mark, .badge-pop {
+      animation: badge-pop 0.32s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    }
+
+    /* Wordwall Error Shake & Snap Pop Keyframes */
+    @keyframes shake-wrong {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+    .shake-wrong {
+      animation: shake-wrong 0.32s ease-in-out;
+    }
+
+    @keyframes snap-pop {
+      0% { transform: scale(0.92); }
+      60% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    .snap-pop {
+      animation: snap-pop 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .card-evaluating {
+      outline: 4px solid #3b82f6 !important;
+      outline-offset: 3px;
+      transform: scale(1.03);
+    }
+
+    /* Utility to hide scrollbars in mobile dock rail */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Sign Text Styling with subtle white halo */
+    .sign-label {
+      color: #111111;
+      text-shadow:
+        -1.5px -1.5px 0 rgba(255, 255, 255, 0.88),
+         1.5px -1.5px 0 rgba(255, 255, 255, 0.88),
+        -1.5px  1.5px 0 rgba(255, 255, 255, 0.88),
+         1.5px  1.5px 0 rgba(255, 255, 255, 0.88),
+         0px    2px   6px rgba(255, 255, 255, 0.9);
+      font-weight: 700;
+      line-height: 1.15;
+    }
+
+    /* Wordwall-style Submit Button */
+    .submit-btn {
+      background: linear-gradient(180deg, #ffffff 0%, #e6e6e6 100%);
+      border: 1.5px solid #8c8c8c;
+      border-radius: 6px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      color: #222;
+      font-weight: 700;
+      transition: all 0.15s ease;
+    }
+    .submit-btn:hover:not(:disabled) {
+      background: linear-gradient(180deg, #fffbeb 0%, #fde68a 100%);
+      border-color: #b45309;
+      transform: translateY(-1px);
+    }
+    .submit-btn:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    /* Floating ghost card for smooth touch/pointer drag */
+    #drag-ghost {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      display: none;
+      transform: translate(-50%, -50%) scale(1.05);
+      box-shadow: 0 16px 32px rgba(0,0,0,0.35);
+    }
+
+    /* Mobile Cards Dock auto-collapsed state when all cards placed */
+    .dock-minimized {
+      transform: translateY(calc(100% - 34px)) !important;
+    }
+
+    /* Custom Scrollbar for Modals */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #c7b299;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between relative select-none">
+
+  <!-- =========================================================================
+       ILLUSTRATED CLASSROOM BACKGROUND (Matches Video Classroom Aesthetic)
+       ========================================================================= -->
+  <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+    <svg viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" class="w-full h-full">
+      <defs>
+        <linearGradient id="wallGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#f3e5d0" />
+          <stop offset="75%" stop-color="#e5d0b1" />
+          <stop offset="100%" stop-color="#d2b48c" />
+        </linearGradient>
+        <linearGradient id="floorGrad" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#c69c6d" />
+          <stop offset="100%" stop-color="#a67c52" />
+        </linearGradient>
+        <linearGradient id="boardGrad" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#607860" />
+          <stop offset="50%" stop-color="#526953" />
+          <stop offset="100%" stop-color="#455a46" />
+        </linearGradient>
+        <radialGradient id="lampGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#fffbeb" stop-opacity="0.7" />
+          <stop offset="100%" stop-color="#fef3c7" stop-opacity="0" />
+        </radialGradient>
+      </defs>
+
+      <!-- Warm Classroom Wall -->
+      <rect width="1600" height="750" fill="url(#wallGrad)" />
+      <!-- Wooden Floor -->
+      <rect y="750" width="1600" height="150" fill="url(#floorGrad)" />
+      <line x1="0" y1="750" x2="1600" y2="750" stroke="#8c6239" stroke-width="6" />
+
+      <!-- Left World Map Poster -->
+      <g transform="translate(35, 360)">
+        <rect width="260" height="165" rx="6" fill="#e6f2f5" stroke="#d4a373" stroke-width="6" opacity="0.85" />
+        <path d="M25,40 Q55,25 75,45 T100,85 Q65,110 40,90 Z" fill="#a3d9a5" opacity="0.8" />
+        <path d="M125,35 Q175,20 215,50 T230,110 Q180,120 155,85 Z" fill="#f6bd60" opacity="0.8" />
+        <path d="M90,115 Q115,105 135,130 T110,150 Z" fill="#f28482" opacity="0.75" />
+        <path d="M195,120 Q220,115 235,135 T210,150 Z" fill="#84a59d" opacity="0.8" />
+      </g>
+
+      <!-- Center Chalkboard -->
+      <g transform="translate(360, 125)">
+        <rect width="860" height="450" rx="10" fill="#c69c6d" stroke="#8c6239" stroke-width="5" />
+        <rect x="18" y="18" width="824" height="414" rx="4" fill="url(#boardGrad)" />
+
+        <!-- Chalk Details -->
+        <g stroke="rgba(255,255,255,0.22)" stroke-width="3" fill="none">
+          <circle cx="85" cy="360" r="32" />
+          <circle cx="74" cy="350" r="3" fill="rgba(255,255,255,0.22)" />
+          <circle cx="96" cy="350" r="3" fill="rgba(255,255,255,0.22)" />
+          <path d="M70,368 Q85,382 100,368" stroke-linecap="round" />
+          <path d="M460,295 Q440,260 480,245 Q505,210 555,230 Q605,215 625,255 Q665,265 650,305 Q665,340 625,355 Q595,380 550,365 Q500,380 475,350 Q435,340 460,295 Z" fill="rgba(255,255,255,0.08)" />
+          <circle cx="425" cy="365" r="10" fill="rgba(255,255,255,0.08)" />
+          <circle cx="400" cy="382" r="6" fill="rgba(255,255,255,0.08)" />
+          <rect x="270" y="385" width="38" height="42" fill="rgba(253, 224, 71, 0.25)" stroke="none" transform="rotate(-6 270 385)" />
+          <rect x="335" y="385" width="38" height="42" fill="rgba(167, 243, 208, 0.25)" stroke="none" transform="rotate(4 335 385)" />
+          <rect x="640" y="385" width="38" height="42" fill="rgba(253, 186, 116, 0.25)" stroke="none" transform="rotate(-4 640 385)" />
+          <rect x="750" y="385" width="38" height="42" fill="rgba(196, 181, 253, 0.25)" stroke="none" transform="rotate(5 750 385)" />
+        </g>
+      </g>
+
+      <!-- Bunting Flags -->
+      <g opacity="0.65">
+        <path d="M-10,20 Q180,140 390,10" fill="none" stroke="#8c6239" stroke-width="2" />
+        <polygon points="20,38 55,55 30,95" fill="#f59e0b" />
+        <polygon points="70,58 108,70 88,112" fill="#10b981" />
+        <polygon points="125,72 165,78 150,120" fill="#3b82f6" />
+        <polygon points="185,78 225,76 215,120" fill="#ec4899" />
+        <polygon points="245,74 285,64 280,108" fill="#eab308" />
+
+        <path d="M180,-5 Q380,120 620,5" fill="none" stroke="#8c6239" stroke-width="2" />
+        <polygon points="320,50 355,55 340,98" fill="#eab308" />
+        <polygon points="370,55 405,56 392,98" fill="#ef4444" />
+        <polygon points="420,54 455,50 448,92" fill="#3b82f6" />
+        <polygon points="470,48 505,40 502,84" fill="#10b981" />
+
+        <path d="M1180,10 Q1390,120 1610,30" fill="none" stroke="#8c6239" stroke-width="2" />
+        <polygon points="1240,35 1275,50 1255,90" fill="#8b5cf6" />
+        <polygon points="1295,55 1330,65 1312,106" fill="#10b981" />
+        <polygon points="1350,68 1390,72 1378,114" fill="#f97316" />
+        <polygon points="1410,73 1450,70 1442,112" fill="#3b82f6" />
+      </g>
+
+      <!-- Warm Classroom Lamps -->
+      <g transform="translate(270, 0)">
+        <line x1="0" y1="0" x2="0" y2="95" stroke="#555" stroke-width="4" />
+        <circle cx="0" cy="115" r="70" fill="url(#lampGlow)" />
+        <path d="M-28,95 L28,95 L40,115 L-40,115 Z" fill="#d97706" opacity="0.7" />
+        <circle cx="0" cy="118" r="14" fill="#fffbeb" />
+      </g>
+      <g transform="translate(1280, 0)">
+        <line x1="0" y1="0" x2="0" y2="95" stroke="#555" stroke-width="4" />
+        <circle cx="0" cy="115" r="70" fill="url(#lampGlow)" />
+        <path d="M-28,95 L28,95 L40,115 L-40,115 Z" fill="#d97706" opacity="0.7" />
+        <circle cx="0" cy="118" r="14" fill="#fffbeb" />
+      </g>
+    </svg>
+  </div>
+
+  <!-- =========================================================================
+       TOP HEADER BAR (Logos, Timer, Single-Page View, Score & Data Controls)
+       ========================================================================= -->
+  <header class="relative z-20 w-full bg-white/85 backdrop-blur-md border-b border-amber-900/20 px-3 py-1.5 shadow-sm">
+    <div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-2">
+
+      <!-- Left: Live Timer + Game Logo + Org Logo -->
+      <div class="flex items-center gap-3">
+        <div class="bg-amber-950/90 text-amber-50 px-3 py-1 rounded-lg font-mono font-bold text-base sm:text-lg shadow-inner flex items-center gap-1.5" title="Game Timer">
+          <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="10" stroke-width="2"></circle>
+            <path stroke-linecap="round" stroke-width="2" d="M12 6v6l4 2"></path>
+          </svg>
+          <span id="timer-display">0:00</span>
+        </div>
+
+        <!-- Brand Logos Container -->
+        <div class="flex items-center gap-2.5 bg-amber-50/90 border border-amber-300/80 rounded-full px-2.5 py-1 shadow-sm">
+          <!-- Game Logo -->
+          <div class="relative w-9 h-9 sm:w-11 sm:h-11 rounded-full overflow-hidden border-2 border-amber-600 shadow bg-amber-100 flex-shrink-0" title="Jain Quest">
+            <img id="game-logo-img" src="game-logo.jpeg" alt="Jain Quest Logo" class="w-full h-full object-cover"
+                 onerror="this.style.display='none'; document.getElementById('game-logo-fallback').style.display='flex';" />
+            <div id="game-logo-fallback" style="display:none;" class="w-full h-full items-center justify-center bg-gradient-to-br from-amber-500 via-yellow-600 to-amber-800 text-white">
+              <svg viewBox="0 0 64 64" class="w-full h-full p-1">
+                <circle cx="32" cy="32" r="29" fill="none" stroke="#fde68a" stroke-width="3"/>
+                <circle cx="32" cy="22" r="6" fill="#fef3c7"/>
+                <path d="M20,44 C20,33 44,33 44,44 Z" fill="#fde68a"/>
+                <text x="32" y="56" font-size="8" text-anchor="middle" fill="#fff" font-weight="bold">JAIN QUEST</text>
+              </svg>
+            </div>
+          </div>
+
+          <div class="leading-tight hidden sm:block">
+            <div class="font-cinzel font-extrabold text-amber-950 text-sm md:text-base tracking-wide flex items-center gap-1.5">
+              <span>JAIN QUEST</span>
+              <span class="text-xs bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded font-sans font-bold">जैन कोष</span>
+            </div>
+            <div class="text-[11px] text-amber-800 font-medium">तीर्थंकर एवं चिह्न मिलान (Tirthankara Sign Match)</div>
+          </div>
+
+          <!-- Org Logo -->
+          <div class="relative w-9 h-9 sm:w-11 sm:h-11 rounded-full overflow-hidden border-2 border-orange-500 shadow bg-orange-400 flex-shrink-0" title="जैन कोष (Jain Kosh)">
+            <img id="org-logo-img" src="jainkosh-logo.jpeg" alt="Jain Kosh Logo" class="w-full h-full object-cover"
+                 onerror="this.style.display='none'; document.getElementById('org-logo-fallback').style.display='flex';" />
+            <div id="org-logo-fallback" style="display:none;" class="w-full h-full items-center justify-center bg-gradient-to-tr from-orange-500 via-amber-400 to-yellow-300">
+              <svg viewBox="0 0 64 64" class="w-full h-full p-1">
+                <circle cx="32" cy="32" r="29" fill="#facc15" stroke="#ef4444" stroke-width="3"/>
+                <rect x="16" y="20" width="15" height="24" rx="2" fill="#f97316"/>
+                <rect x="33" y="20" width="15" height="24" rx="2" fill="#f97316"/>
+                <text x="32" y="35" font-size="9" text-anchor="middle" fill="#fff" font-weight="bold">जैन कोष</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Center: Active Dataset Badge Pill -->
+      <div id="active-dataset-pill" class="hidden md:flex items-center gap-1.5 bg-amber-950/85 text-amber-200 px-3 py-1 rounded-full border border-amber-400/60 shadow-sm text-xs font-semibold">
+        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+        <span id="active-dataset-name">Video Set 1</span>
+      </div>
+
+      <!-- Right: New Game + Dataset Mode + JSON Manager + Score Display -->
+      <div class="flex items-center gap-2">
+        <button id="new-game-btn" onclick="startRandomGame()" class="text-xs sm:text-sm bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-bold py-1.5 px-3 rounded-lg shadow flex items-center gap-1.5 transition" title="Start a fresh game with a random 10-Tirthankara set">
+          <span>🎲 New Game</span>
+          <span class="hidden sm:inline text-amber-200 text-[11px]">(Random Set)</span>
+        </button>
+
+        <select id="dataset-select" onchange="switchDatasetMode(this.value)" class="text-xs sm:text-sm bg-amber-100 hover:bg-amber-200 text-amber-950 font-bold py-1.5 px-2.5 rounded-lg border border-amber-400 cursor-pointer focus:outline-none">
+          <option value="random">🎲 Random Set</option>
+          <option value="video_set1">Video Set 1 (10 भगवान)</option>
+          <option value="video_set2">Video Set 2 (10 भगवान)</option>
+          <option value="authentic_10">Authentic Signs (10 भगवान)</option>
+          <option value="json10_exact">Attached jain-quest.json (Exact)</option>
+        </select>
+
+        <button onclick="openDataModal()" class="text-xs sm:text-sm bg-stone-800 hover:bg-stone-700 text-white font-semibold py-1.5 px-3 rounded-lg shadow flex items-center gap-1.5 transition" title="Upload Custom JSON, Multi-JSON Sets, or Logos">
+          <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+          </svg>
+          <span class="hidden md:inline">JSON Manager</span>
+        </button>
+
+        <div class="flex items-center gap-1 bg-emerald-50 border border-emerald-400 text-emerald-900 px-3 py-1 rounded-lg font-extrabold text-base sm:text-lg shadow-sm" title="Total Correct Answers">
+          <span class="text-emerald-600">✓</span>
+          <span id="score-display">0</span>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       MAIN PLAYFIELD (Left: 2x5 Draggable God Cards | Right: 2x5 Drop Boxes + Signs)
+       ========================================================================= -->
+  <main class="relative z-10 flex-1 w-full max-w-[1600px] mx-auto px-2 sm:px-5 py-2 flex flex-col justify-center pb-36 lg:pb-2">
+
+    <!-- Helper banner -->
+    <div id="helper-banner" class="mb-2 flex items-center justify-between bg-amber-950/75 text-amber-50 text-xs sm:text-sm px-3 py-1.5 rounded-lg backdrop-blur-sm">
+      <div class="flex items-center gap-2">
+        <span class="bg-amber-400 text-amber-950 font-extrabold px-2 py-0.5 rounded text-xs">HOW TO PLAY</span>
+        <span>बाईं ओर से <strong>तीर्थंकर भगवान</strong> का कार्ड खींचकर (Drag) या क्लिक करके सही <strong>चिह्न (Sign)</strong> के खाली बॉक्स में रखें, फिर <strong>Submit Answers</strong> दबाएँ।</span>
+      </div>
+      <button onclick="resetBoard()" class="text-amber-300 hover:text-white font-bold underline ml-2 whitespace-nowrap">Reset Board</button>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-stretch my-auto">
+
+      <!-- LEFT POOL: 2 Columns x 5 Rows of Colorful Godname Cards (Desktop only) -->
+      <section aria-label="Tirthankara Cards Pool" class="hidden lg:flex lg:col-span-4 bg-white/30 backdrop-blur-[2px] rounded-2xl p-2.5 sm:p-3 border border-white/50 shadow-inner flex flex-col justify-between">
+        <div id="left-pool-grid" class="grid grid-cols-2 gap-2.5 sm:gap-3 h-full min-h-[340px] sm:min-h-[460px] lg:min-h-[540px] content-start">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </section>
+
+      <!-- RIGHT TARGET AREA: 2 Columns x 5 Rows of [Drop Box] + Sign Label -->
+      <section aria-label="Sign Drop Targets" class="lg:col-span-8 bg-white/20 backdrop-blur-[1px] rounded-2xl p-2.5 sm:p-3 border border-white/40 flex flex-col justify-between">
+        <div id="right-targets-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 lg:gap-x-8 gap-y-2.5 sm:gap-y-3 h-full min-h-[340px] sm:min-h-[460px] lg:min-h-[540px]">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Mobile Sticky Bottom Cards Dock (Visible on screens < 1024px) -->
+  <div id="mobile-cards-dock" class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-stone-900/95 backdrop-blur-md border-t-2 border-amber-600/50 shadow-2xl transition-all duration-300">
+    <div class="max-w-[1600px] mx-auto px-3 py-1.5 flex items-center justify-between border-b border-stone-800">
+      <span id="unplaced-badge" class="bg-amber-500/20 text-amber-300 text-xs font-bold px-2.5 py-0.5 rounded-full border border-amber-500/30 flex items-center gap-1">
+        ✨ 10 शेष (10 unplaced)
+      </span>
+      <button id="dock-toggle-btn" onclick="toggleDockExpand()" class="text-xs text-amber-200 hover:text-white font-bold flex items-center gap-1 bg-stone-800 px-2 py-0.5 rounded">
+        <span id="dock-toggle-text">Expand Tray ▲</span>
+      </button>
+    </div>
+    <div id="mobile-dock-cards" class="p-2 overflow-x-auto flex gap-2 no-scrollbar">
+      <!-- Dynamic card items -->
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       BOTTOM CONTROL BAR (Pause, Restart, Submit Answers, Audio, Fullscreen)
+       ========================================================================= -->
+  <footer class="relative z-20 w-full px-3 py-2 flex items-center justify-between max-w-[1600px] mx-auto pb-24 lg:pb-2">
+
+    <!-- Bottom Left: Pause & Restart -->
+    <div class="flex items-center gap-2">
+      <button id="pause-btn" onclick="togglePause()" class="w-9 h-9 rounded-lg bg-stone-900/80 hover:bg-stone-900 text-white flex items-center justify-center shadow transition" title="Pause / Resume Timer">
+        <svg id="pause-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>
+        </svg>
+      </button>
+
+      <button onclick="resetBoard()" class="px-3 py-1.5 rounded-lg bg-stone-800/85 hover:bg-stone-900 text-amber-200 text-xs sm:text-sm font-bold shadow transition flex items-center gap-1" title="Restart Game">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+        </svg>
+        <span>Restart</span>
+      </button>
+    </div>
+
+    <!-- Bottom Center: Submit Answers + Show Correct -->
+    <div class="flex items-center gap-3">
+      <button id="submit-btn" onclick="submitAnswers()" class="submit-btn px-6 sm:px-8 py-2 text-sm sm:text-base tracking-wide shadow-md">
+        Submit Answers
+      </button>
+
+      <button id="show-answers-btn" onclick="fillCorrectAnswers()" class="hidden px-4 py-2 rounded-md bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs sm:text-sm shadow transition">
+        Show Correct Answers
+      </button>
+    </div>
+
+    <!-- Bottom Right: Sound & Fullscreen -->
+    <div class="flex items-center gap-2">
+      <button id="sound-btn" onclick="toggleSound()" class="w-9 h-9 rounded-lg bg-stone-900/80 hover:bg-stone-900 text-white flex items-center justify-center shadow transition" title="Toggle Sound Effects">
+        <svg id="sound-on-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+        </svg>
+        <svg id="sound-off-icon" class="w-5 h-5 hidden text-red-400" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+        </svg>
+      </button>
+
+      <button onclick="toggleFullscreen()" class="w-9 h-9 rounded-lg bg-stone-900/80 hover:bg-stone-900 text-white flex items-center justify-center shadow transition" title="Toggle Fullscreen">
+        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+        </svg>
+      </button>
+    </div>
+
+  </footer>
+
+  <!-- Floating Drag Ghost Element for Pointer / Touch Dragging -->
+  <div id="drag-ghost" class="game-card w-36 h-20"></div>
+
+  <!-- Fullscreen Celebration FX Canvas -->
+  <canvas id="fx-canvas" class="fixed inset-0 pointer-events-none z-50 w-full h-full"></canvas>
+
+  <!-- =========================================================================
+       DATA & LOGO MANAGER MODAL
+       ========================================================================= -->
+  <div id="data-modal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border-2 border-amber-600 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b pb-3 mb-4">
+        <div>
+          <h2 class="text-xl font-extrabold text-amber-950">Jain Quest - JSON Data & Logo Manager</h2>
+          <p class="text-xs text-stone-600">Configure custom JSON files, upload multiple datasets simultaneously, or preview local logos</p>
+        </div>
+        <button onclick="closeDataModal()" class="text-stone-500 hover:text-stone-800 text-2xl font-bold">&times;</button>
+      </div>
+
+      <!-- Upload Local Logos for Browser Preview -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5 bg-amber-50 p-3.5 rounded-xl border border-amber-200">
+        <div>
+          <label class="block text-xs font-bold text-amber-950 mb-1">Game Logo (`game-logo.jpeg`)</label>
+          <input type="file" accept="image/*" onchange="handleLogoUpload(event, 'game-logo-img', 'game-logo-fallback')" class="text-xs w-full file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-bold file:bg-amber-600 file:text-white hover:file:bg-amber-700" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-amber-950 mb-1">Organisation Logo (`jainkosh-logo.jpeg`)</label>
+          <input type="file" accept="image/*" onchange="handleLogoUpload(event, 'org-logo-img', 'org-logo-fallback')" class="text-xs w-full file:mr-2 file:py-1 file:px-2.5 file:rounded-md file:border-0 file:text-xs file:font-bold file:bg-orange-600 file:text-white hover:file:bg-orange-700" />
+        </div>
+      </div>
+
+      <!-- Multi-JSON File Upload & Pool Section -->
+      <div class="mb-5 bg-stone-50 p-3.5 rounded-xl border border-stone-200">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+          <div>
+            <label class="text-sm font-bold text-stone-800">Multi-JSON File Upload</label>
+            <p class="text-[11px] text-stone-500">Select one or multiple .json files simultaneously to expand the playable sets pool</p>
+          </div>
+          <input type="file" multiple accept=".json" onchange="handleMultipleJsonUpload(event)" class="text-xs file:mr-2 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-bold file:bg-amber-600 file:text-white hover:file:bg-amber-700 cursor-pointer" />
+        </div>
+
+        <!-- Dynamic List of Registered Datasets with Item Counts & Quick Play -->
+        <div class="mt-3">
+          <div class="text-xs font-bold text-stone-700 mb-1.5 flex items-center justify-between">
+            <span>Playable Datasets Pool</span>
+            <span id="registered-datasets-count" class="text-[11px] text-amber-700 font-semibold">3 Datasets Registered</span>
+          </div>
+          <div id="dataset-registry-list" class="space-y-1.5 max-h-36 overflow-y-auto pr-1">
+            <!-- Populated dynamically via JS -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Upload or Edit Single JSON Data -->
+      <div class="mb-4">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+          <label class="text-sm font-bold text-stone-800">Active Game Data Editor (`jain-quest.json` format)</label>
+          <input type="file" accept=".json" onchange="handleJsonFileUpload(event)" class="text-xs file:mr-2 file:py-1 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-bold file:bg-stone-800 file:text-white hover:file:bg-stone-700 cursor-pointer" />
+        </div>
+        <textarea id="json-editor" rows="7" class="w-full font-mono text-xs p-3 rounded-xl border border-stone-300 bg-white focus:outline-none focus:border-amber-600"></textarea>
+        <p class="text-[11px] text-stone-500 mt-1">
+          Format: Array of objects with <code>{"godname": "...", "sign": "..."}</code>. Exactly 10 items will be played.
+        </p>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-end gap-2 pt-2 border-t">
+        <button onclick="downloadCurrentJson()" class="px-4 py-2 rounded-lg bg-stone-200 hover:bg-stone-300 text-stone-800 text-xs font-bold transition">
+          Download Active JSON
+        </button>
+        <button onclick="applyCustomJson()" class="px-5 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-sm font-bold shadow transition">
+          Apply & Start Game
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       COMPLETION / SCORE SUMMARY MODAL
+       ========================================================================= -->
+  <div id="result-modal" class="fixed inset-0 z-50 bg-black/65 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-gradient-to-b from-amber-50 to-white rounded-3xl max-w-md w-full p-6 text-center shadow-2xl border-4 border-amber-500">
+      <div class="w-16 h-16 mx-auto mb-3 rounded-full bg-amber-100 border-2 border-amber-500 flex items-center justify-center text-3xl">
+        🏆
+      </div>
+      <h2 class="text-2xl font-extrabold text-amber-950 mb-1">जय जिनेन्द्र! (Game Complete)</h2>
+      <p id="result-subtitle" class="text-sm text-stone-600 mb-4">शानदार! आपने गेम पूरा कर लिया है।</p>
+
+      <div class="grid grid-cols-2 gap-3 mb-5">
+        <div class="bg-white p-3 rounded-2xl border border-amber-200 shadow-sm">
+          <div class="text-xs text-stone-500 font-bold uppercase">Total Score</div>
+          <div id="final-score-text" class="text-2xl font-extrabold text-emerald-600">0 / 10</div>
+        </div>
+        <div class="bg-white p-3 rounded-2xl border border-amber-200 shadow-sm">
+          <div class="text-xs text-stone-500 font-bold uppercase">Time Taken</div>
+          <div id="final-time-text" class="text-2xl font-extrabold text-amber-800">0:00</div>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-center gap-2.5">
+        <button onclick="closeResultModal(); startRandomGame();" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-bold text-sm shadow-md transition flex items-center gap-1.5" title="Start a fresh game with a random 10-Tirthankara set">
+          <span>🎲 Next Random Game</span>
+        </button>
+        <button onclick="closeResultModal(); resetBoard();" class="px-4 py-2.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-950 font-bold text-sm border border-amber-300 transition flex items-center gap-1.5" title="Replay this exact set">
+          <span>🔄 Play Again</span>
+        </button>
+        <button onclick="closeResultModal();" class="px-3.5 py-2.5 rounded-xl bg-stone-200 hover:bg-stone-300 text-stone-800 font-bold text-sm transition flex items-center gap-1.5" title="Inspect current board state">
+          <span>👁️ Review Board</span>
+        </button>
+        <button onclick="closeResultModal(); fillCorrectAnswers();" class="px-3.5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm shadow transition flex items-center gap-1.5" title="Show all correct answers">
+          <span>Show Correct Answers</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       GAME ENGINE & INTERACTION LOGIC
+       ========================================================================= -->
+  <script>
+    // 1. DATASETS
+    // Exact 10 items from user's attached jain-quest.json
+    const ATTACHED_JSON_EXACT = [
+      { "godname": "कुंथुनाथ भगवान", "sign": "स्वस्तिक" },
+      { "godname": "विमलनाथ भगवान", "sign": "हिरण" },
+      { "godname": "धर्मनाथ भगवान", "sign": "बकरा" },
+      { "godname": "अजितनाथ भगवान", "sign": "शूकर" },
+      { "godname": "आदिनाथ भगवान", "sign": "वज्रदंड" },
+      { "godname": "सुपार्श्वनाथ भगवान", "sign": "कछुआ" },
+      { "godname": "पुष्पदंत भगवान", "sign": "सिंह" },
+      { "godname": "शांतिनाथ भगवान", "sign": "मगर" },
+      { "godname": "महावीर भगवान", "sign": "बैल" },
+      { "godname": "मुनिसुव्रतनाथ भगवान", "sign": "हाथी" }
+    ];
+
+    // Authentic traditional Jain Lanchhan (signs) for the same 10 Tirthankaras
+    const ATTACHED_JSON_AUTHENTIC = [
+      { "godname": "कुंथुनाथ भगवान", "sign": "बकरा" },
+      { "godname": "विमलनाथ भगवान", "sign": "शूकर" },
+      { "godname": "धर्मनाथ भगवान", "sign": "वज्रदंड" },
+      { "godname": "अजितनाथ भगवान", "sign": "हाथी" },
+      { "godname": "आदिनाथ भगवान", "sign": "बैल" },
+      { "godname": "सुपार्श्वनाथ भगवान", "sign": "स्वस्तिक" },
+      { "godname": "पुष्पदंत भगवान", "sign": "मगर" },
+      { "godname": "शांतिनाथ भगवान", "sign": "हिरण" },
+      { "godname": "महावीर भगवान", "sign": "सिंह" },
+      { "godname": "मुनिसुव्रतनाथ भगवान", "sign": "कछुआ" }
+    ];
+    const AUTHENTIC_SET_DATASET = ATTACHED_JSON_AUTHENTIC;
+
+    // Set 1 from the video
+    const VIDEO_PAGE1_DATASET = [
+      { "godname": "कुंथुनाथ भगवान", "sign": "बकरा" },
+      { "godname": "धर्मनाथ भगवान", "sign": "वज्रदंड" },
+      { "godname": "सुमतिनाथ भगवान", "sign": "चकवा" },
+      { "godname": "महावीर भगवान", "sign": "सिंह" },
+      { "godname": "चंद्रप्रभ भगवान", "sign": "चंद्रमा" },
+      { "godname": "आदिनाथ भगवान", "sign": "बैल" },
+      { "godname": "श्रेयांसनाथ भगवान", "sign": "गेंडा" },
+      { "godname": "पार्श्वनाथ भगवान", "sign": "सर्प" },
+      { "godname": "पद्मप्रभु भगवान", "sign": "लाल कमल" },
+      { "godname": "संभवनाथ भगवान", "sign": "घोड़ा" }
+    ];
+
+    // Set 2 from the video
+    const VIDEO_PAGE2_DATASET = [
+      { "godname": "शीतलनाथ भगवान", "sign": "कल्पवृक्ष" },
+      { "godname": "अभिनंदननाथ भगवान", "sign": "बंदर" },
+      { "godname": "वासुपूज्य भगवान", "sign": "भैंसा" },
+      { "godname": "विमलनाथ भगवान", "sign": "शूकर" },
+      { "godname": "सुपार्श्वनाथ भगवान", "sign": "स्वस्तिक" },
+      { "godname": "शांतिनाथ भगवान", "sign": "हिरण" },
+      { "godname": "अनंतनाथ भगवान", "sign": "सेही" },
+      { "godname": "पुष्पदंत भगवान", "sign": "मगर" },
+      { "godname": "मुनिसुव्रतनाथ भगवान", "sign": "कछुआ" },
+      { "godname": "अजितनाथ भगवान", "sign": "हाथी" }
+    ];
+
+    // Multi-Dataset Pool Registry & Helper Engine
+    const DATASET_REGISTRY = [
+      { id: 'video_set1', name: 'Video Set 1 (10 भगवान)', items: VIDEO_PAGE1_DATASET, data: VIDEO_PAGE1_DATASET },
+      { id: 'video_set2', name: 'Video Set 2 (10 भगवान)', items: VIDEO_PAGE2_DATASET, data: VIDEO_PAGE2_DATASET },
+      { id: 'authentic_10', name: 'Authentic Signs (10 भगवान)', items: AUTHENTIC_SET_DATASET, data: AUTHENTIC_SET_DATASET },
+      { id: 'json10_exact', name: 'Attached jain-quest.json (Exact)', items: ATTACHED_JSON_EXACT, data: ATTACHED_JSON_EXACT }
+    ];
+
+    function validateDataset(data) {
+      if (!Array.isArray(data) || data.length === 0) return false;
+      return data.every(item => item && typeof item.godname === 'string' && typeof item.sign === 'string');
+    }
+
+    function pickRandomDataset() {
+      if (!DATASET_REGISTRY || DATASET_REGISTRY.length === 0) return null;
+      let candidates = DATASET_REGISTRY;
+      if (DATASET_REGISTRY.length > 1 && typeof activeDatasetId !== 'undefined' && activeDatasetId) {
+        candidates = DATASET_REGISTRY.filter(d => d.id !== activeDatasetId);
+        if (candidates.length === 0) candidates = DATASET_REGISTRY;
+      }
+      const idx = Math.floor(Math.random() * candidates.length);
+      const chosen = candidates[idx];
+      return {
+        id: chosen.id,
+        name: chosen.name,
+        items: chosen.items,
+        data: chosen.items
+      };
+    }
+
+    function registerCustomDataset(name, items) {
+      if (!validateDataset(items)) return false;
+      const id = `custom_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
+      const datasetEntry = { id, name, items: items.slice(0, 10), data: items.slice(0, 10) };
+      DATASET_REGISTRY.push(datasetEntry);
+      if (typeof updateDatasetRegistryUI === 'function') {
+        updateDatasetRegistryUI();
+      }
+      return true;
+    }
+
+    function registerCustomDatasets(datasets) {
+      if (!Array.isArray(datasets)) return 0;
+      let added = 0;
+      datasets.forEach((ds) => {
+        const name = ds.name || `Custom Set ${DATASET_REGISTRY.length + 1}`;
+        const items = Array.isArray(ds.items) ? ds.items : (Array.isArray(ds.data) ? ds.data : (Array.isArray(ds) ? ds : []));
+        if (registerCustomDataset(name, items)) {
+          added++;
+        }
+      });
+      return added;
+    }
+
+    // 10 unique, distinct pastel card colors (no duplicates)
+    const CARD_COLORS = [
+      "#f6b26b", // Tangerine
+      "#fff176", // Lemon Yellow
+      "#93eb96", // Spring Green
+      "#80deea", // Sky Cyan
+      "#e885ec", // Orchid Purple
+      "#ffab91", // Coral Peach
+      "#c5e1a5", // Lime Pistachio
+      "#b39ddb", // Soft Lavender
+      "#f48fb1", // Rose Pink
+      "#80cbc4"  // Seafoam Teal
+    ];
+
+    // 2. STATE DEFINITIONS
+    let activeDataset = [...VIDEO_PAGE1_DATASET];
+    let activeDatasetName = 'Video Set 1 (10 भगवान)';
+    let activeDatasetId = 'video_set1';
+    let currentDatasetMode = 'random';
+    
+    // Core Game State (Single Page)
+    let gameState = {
+      cards: [],
+      poolCardIds: [],
+      slots: [],
+      submitted: false,
+      score: 0
+    };
+
+    let selectedCardId = null;
+    let lastPlacedCardId = null;
+    let timerSeconds = 0;
+    let timerInterval = null;
+    let isPaused = false;
+    let soundEnabled = true;
+    let isEvaluating = false;
+
+    // 3. WEB AUDIO SYNTHESIZER
+    let audioCtx = null;
+    function getAudioCtx() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) {
+          audioCtx = new AudioContext();
+        }
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function unlockAudioOnFirstGesture() {
+      getAudioCtx();
+      window.removeEventListener('pointerdown', unlockAudioOnFirstGesture);
+      window.removeEventListener('touchstart', unlockAudioOnFirstGesture);
+      window.removeEventListener('click', unlockAudioOnFirstGesture);
+    }
+    window.addEventListener('pointerdown', unlockAudioOnFirstGesture);
+    window.addEventListener('touchstart', unlockAudioOnFirstGesture);
+    window.addEventListener('click', unlockAudioOnFirstGesture);
+
+    function playSound(type) {
+      if (!soundEnabled) return;
+      try {
+        const ctx = getAudioCtx();
+        if (!ctx) return;
+        if (ctx.state === 'suspended') ctx.resume();
+        const now = ctx.currentTime;
+
+        if (type === 'pickup') {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(340, now);
+          osc.frequency.exponentialRampToValueAtTime(680, now + 0.08);
+          gain.gain.setValueAtTime(0.22, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.09);
+        } else if (type === 'drop') {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(320, now);
+          osc.frequency.exponentialRampToValueAtTime(110, now + 0.1);
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.1);
+        } else if (type === 'correct') {
+          // High-register resonant bell chime with exponential decay
+          const freqs = [1200, 1500, 1800];
+          freqs.forEach((f, idx) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(f, now + idx * 0.025);
+            gain.gain.setValueAtTime(0.24, now + idx * 0.025);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.025 + 0.45);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now + idx * 0.025);
+            osc.stop(now + idx * 0.025 + 0.46);
+          });
+        } else if (type === 'wrong') {
+          // Low damped square/sawtooth thud: 130Hz -> 85Hz
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(130, now);
+          osc.frequency.exponentialRampToValueAtTime(85, now + 0.22);
+          gain.gain.setValueAtTime(0.3, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.23);
+        } else if (type === 'fanfare') {
+          // Rich multi-voice arpeggio victory fanfare
+          const notes = [523.25, 659.25, 783.99, 1046.5, 1318.5]; // C5, E5, G5, C6, E6
+          notes.forEach((n, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(n, now + i * 0.09);
+            gain.gain.setValueAtTime(0.24, now + i * 0.09);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.09 + 0.45);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now + i * 0.09);
+            osc.stop(now + i * 0.09 + 0.46);
+          });
+        }
+      } catch (e) {
+        // Audio error caught safely
+      }
+    }
+
+    // 3.5 CANVAS CONFETTI ENGINE (Zero-Dependency)
+    let confettiAnimationId = null;
+    let confettiParticles = [];
+
+    function fireConfetti(particleCount = 130) {
+      const canvas = document.getElementById('fx-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) return;
+
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const colors = ['#f59e0b', '#10b981', '#3b82f6', '#ec4899', '#8b5cf6', '#ef4444', '#facc15', '#06b6d4'];
+
+      const newParticles = [];
+      for (let i = 0; i < particleCount; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = Math.random() * 12 + 4;
+        newParticles.push({
+          x: canvas.width / 2 + (Math.random() - 0.5) * (canvas.width * 0.5),
+          y: canvas.height * 0.35 + (Math.random() - 0.5) * 80,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 6,
+          gravity: 0.28 + Math.random() * 0.15,
+          wind: (Math.random() - 0.5) * 0.6,
+          rotation: Math.random() * 360,
+          rotationSpeed: (Math.random() - 0.5) * 12,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          size: Math.random() * 9 + 6,
+          aspect: Math.random() * 0.6 + 0.4,
+          alpha: 1,
+          decay: 0.006 + Math.random() * 0.008
+        });
+      }
+
+      confettiParticles = [...confettiParticles, ...newParticles];
+
+      if (confettiAnimationId) {
+        cancelAnimationFrame(confettiAnimationId);
+      }
+
+      function updateConfetti() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        for (let i = confettiParticles.length - 1; i >= 0; i--) {
+          const p = confettiParticles[i];
+          p.x += p.vx + p.wind;
+          p.y += p.vy;
+          p.vy += p.gravity;
+          p.vx *= 0.98;
+          p.rotation += p.rotationSpeed;
+          p.alpha -= p.decay;
+
+          if (p.alpha <= 0 || p.y > canvas.height + 40) {
+            confettiParticles.splice(i, 1);
+            continue;
+          }
+
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate((p.rotation * Math.PI) / 180);
+          ctx.globalAlpha = Math.max(0, p.alpha);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-p.size / 2, (-p.size * p.aspect) / 2, p.size, p.size * p.aspect);
+          ctx.restore();
+        }
+
+        if (confettiParticles.length > 0) {
+          confettiAnimationId = requestAnimationFrame(updateConfetti);
+        } else {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          confettiAnimationId = null;
+        }
+      }
+
+      confettiAnimationId = requestAnimationFrame(updateConfetti);
+    }
+
+    // 4. BOARD INITIALIZATION
+    function shuffleArray(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function initGameBoard(dataset) {
+      const slice = dataset.slice(0, 10);
+
+      const cards = slice.map((item, idx) => ({
+        id: `card_${idx}`,
+        godname: item.godname.trim(),
+        correctSign: item.sign.trim(),
+        color: CARD_COLORS[idx % CARD_COLORS.length]
+      }));
+
+      const shuffledSigns = shuffleArray(slice.map(item => item.sign.trim()));
+
+      const slots = shuffledSigns.map((signText, sIdx) => ({
+        slotId: `slot_${sIdx}`,
+        sign: signText,
+        placedCardId: null,
+        evalStatus: null
+      }));
+
+      gameState = {
+        cards,
+        poolCardIds: shuffleArray(cards.map(c => c.id)),
+        slots,
+        submitted: false,
+        score: 0
+      };
+
+      selectedCardId = null;
+      lastPlacedCardId = null;
+      updateScoreDisplay();
+      updateUnplacedBadge();
+    }
+
+    function formatGodnameLines(name) {
+      const parts = name.trim().split(/\s+/);
+      if (parts.length >= 2) {
+        const firstLine = parts.slice(0, -1).join(' ');
+        const secondLine = parts[parts.length - 1];
+        return `<div>${firstLine}</div><div>${secondLine}</div>`;
+      }
+      return `<div>${name}</div>`;
+    }
+
+    function formatSignLines(sign) {
+      const parts = sign.trim().split(/\s+/);
+      if (parts.length >= 2) {
+        return parts.map(p => `<div>${p}</div>`).join('');
+      }
+      return `<div>${sign}</div>`;
+    }
+
+    // 5. RENDERING BOARD & INTERACTION ENGINE
+    function updateUnplacedBadge() {
+      const badge = document.getElementById('unplaced-badge');
+      const dock = document.getElementById('mobile-cards-dock');
+      const toggleText = document.getElementById('dock-toggle-text');
+      const count = (gameState && gameState.poolCardIds) ? gameState.poolCardIds.length : 0;
+
+      if (badge) {
+        badge.innerHTML = `✨ ${count} शेष (${count} unplaced)`;
+      }
+
+      if (dock) {
+        if (count === 0) {
+          dock.classList.add('dock-minimized');
+          if (toggleText) toggleText.textContent = 'Show Cards ▲';
+        } else {
+          dock.classList.remove('dock-minimized');
+          if (toggleText) {
+            toggleText.textContent = isDockExpanded ? 'Collapse Tray ▼' : 'Expand Tray ▲';
+          }
+        }
+      }
+    }
+
+    function renderBoard() {
+      // 1. Render Left Pool (Desktop)
+      const leftGrid = document.getElementById('left-pool-grid');
+      if (leftGrid) {
+        leftGrid.innerHTML = '';
+        gameState.poolCardIds.forEach(cardId => {
+          const card = gameState.cards.find(c => c.id === cardId);
+          if (!card) return;
+          const cardEl = createCardElement(card, 'pool', null);
+          leftGrid.appendChild(cardEl);
+        });
+
+        leftGrid.ondragover = (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+        };
+        leftGrid.ondrop = (e) => {
+          e.preventDefault();
+          if (isEvaluating || gameState.submitted) return;
+          const draggedCardId = e.dataTransfer.getData('text/plain') || selectedCardId;
+          if (draggedCardId) {
+            moveCardToPool(draggedCardId);
+          }
+        };
+        leftGrid.onclick = (e) => {
+          if (e.target === leftGrid && selectedCardId) {
+            selectedCardId = null;
+            renderBoard();
+          }
+        };
+      }
+
+      // 2. Render Mobile Bottom Dock Cards (Mobile / Tablet)
+      const mobileDockCards = document.getElementById('mobile-dock-cards');
+      if (mobileDockCards) {
+        mobileDockCards.innerHTML = '';
+        gameState.poolCardIds.forEach(cardId => {
+          const card = gameState.cards.find(c => c.id === cardId);
+          if (!card) return;
+          const cardEl = createCardElement(card, 'dock', null);
+          mobileDockCards.appendChild(cardEl);
+        });
+
+        mobileDockCards.ondragover = (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+        };
+        mobileDockCards.ondrop = (e) => {
+          e.preventDefault();
+          if (isEvaluating || gameState.submitted) return;
+          const draggedCardId = e.dataTransfer.getData('text/plain') || selectedCardId;
+          if (draggedCardId) {
+            moveCardToPool(draggedCardId);
+          }
+        };
+      }
+
+      // 3. Synchronize Unplaced Counter Badge & Auto-Dock Collapse
+      updateUnplacedBadge();
+
+      // 4. Render Right Targets
+      const rightGrid = document.getElementById('right-targets-grid');
+      if (rightGrid) {
+        rightGrid.innerHTML = '';
+
+        gameState.slots.forEach((slot, sIdx) => {
+          const rowWrapper = document.createElement('div');
+          rowWrapper.className = 'flex items-center gap-3 sm:gap-4 h-[64px] sm:h-[84px] lg:h-[96px]';
+
+          const dropBox = document.createElement('div');
+          dropBox.className = `drop-slot w-[130px] sm:w-[155px] lg:w-[170px] h-full flex-shrink-0 ${slot.placedCardId ? 'filled' : ''}`;
+          dropBox.dataset.slotIndex = sIdx;
+
+          if (slot.placedCardId) {
+            const placedCard = gameState.cards.find(c => c.id === slot.placedCardId);
+            if (placedCard) {
+              const cardEl = createCardElement(placedCard, 'slot', slot);
+              dropBox.appendChild(cardEl);
+            }
+          }
+
+          dropBox.addEventListener('click', (ev) => {
+            if (isEvaluating || gameState.submitted) return;
+            if (selectedCardId && !slot.placedCardId) {
+              ev.stopPropagation();
+              const cardToPlace = selectedCardId;
+              selectedCardId = null;
+              placeCardInSlot(cardToPlace, sIdx);
+            }
+          });
+
+          dropBox.addEventListener('dragover', (e) => {
+            if (isEvaluating || gameState.submitted) return;
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            dropBox.classList.add('drag-over');
+          });
+          dropBox.addEventListener('dragleave', () => {
+            dropBox.classList.remove('drag-over');
+          });
+          dropBox.addEventListener('drop', (e) => {
+            if (isEvaluating || gameState.submitted) return;
+            e.preventDefault();
+            dropBox.classList.remove('drag-over');
+            const draggedCardId = e.dataTransfer.getData('text/plain') || selectedCardId;
+            if (draggedCardId) {
+              selectedCardId = null;
+              placeCardInSlot(draggedCardId, sIdx);
+            }
+          });
+
+          const signLabel = document.createElement('div');
+          signLabel.className = 'sign-label text-2xl sm:text-3xl lg:text-[36px] select-none flex-1 text-left pl-1 cursor-pointer';
+          signLabel.innerHTML = formatSignLines(slot.sign);
+
+          signLabel.addEventListener('click', () => {
+            if (isEvaluating || gameState.submitted || !selectedCardId) return;
+            const cardToPlace = selectedCardId;
+            selectedCardId = null;
+            placeCardInSlot(cardToPlace, sIdx);
+          });
+
+          rowWrapper.appendChild(dropBox);
+          rowWrapper.appendChild(signLabel);
+          rightGrid.appendChild(rowWrapper);
+        });
+      }
+
+      // Submit & Show Buttons
+      const submitBtn = document.getElementById('submit-btn');
+      const showAnsBtn = document.getElementById('show-answers-btn');
+      const anyPlaced = gameState.slots && gameState.slots.some(s => s.placedCardId !== null);
+
+      if (submitBtn) {
+        submitBtn.disabled = (!anyPlaced || gameState.submitted || isEvaluating);
+      }
+      if (showAnsBtn) {
+        if (gameState.submitted) {
+          showAnsBtn.classList.remove('hidden');
+        } else {
+          showAnsBtn.classList.add('hidden');
+        }
+      }
+
+      const newGameBtn = document.getElementById('new-game-btn');
+      if (newGameBtn) {
+        newGameBtn.disabled = isEvaluating;
+      }
+      const datasetSelect = document.getElementById('dataset-select');
+      if (datasetSelect) {
+        datasetSelect.disabled = isEvaluating;
+      }
+    }
+
+    function createCardElement(card, location, slotObj) {
+      const div = document.createElement('div');
+      const isSelected = (selectedCardId === card.id);
+      const isWrong = (slotObj && slotObj.evalStatus === 'wrong');
+      const isSnap = (lastPlacedCardId === card.id);
+
+      let sizeClasses = 'w-full h-[64px] sm:h-[84px] lg:h-[96px] text-lg sm:text-xl lg:text-[23px]';
+      if (location === 'dock') {
+        sizeClasses = 'min-w-[120px] sm:min-w-[140px] h-[58px] sm:h-[68px] text-base sm:text-lg flex-shrink-0';
+      }
+
+      div.className = `game-card ${sizeClasses} cursor-pointer select-none ${isSelected ? 'selected-card' : ''} ${isWrong ? 'card-wrong' : ''} ${isSnap ? 'snap-pop' : ''}`;
+      div.style.backgroundColor = card.color;
+      div.dataset.cardId = card.id;
+      div.draggable = (!gameState.submitted && !isEvaluating);
+
+      div.innerHTML = formatGodnameLines(card.godname);
+
+      if (isSnap) {
+        div.addEventListener('animationend', () => {
+          div.classList.remove('snap-pop');
+          if (lastPlacedCardId === card.id) lastPlacedCardId = null;
+        }, { once: true });
+      }
+
+      if (slotObj && slotObj.evalStatus) {
+        const badge = document.createElement('div');
+        badge.className = 'eval-mark badge-pop absolute bottom-0.5 left-1/2 -translate-x-1/2 font-extrabold text-sm sm:text-base leading-none pointer-events-none';
+        if (slotObj.evalStatus === 'correct') {
+          badge.innerHTML = '<span class="text-emerald-950 drop-shadow-[0_1px_1px_rgba(255,255,255,0.9)] font-black text-base sm:text-lg">✓</span>';
+        } else {
+          badge.innerHTML = '<span class="text-stone-900 drop-shadow-[0_1px_1px_rgba(255,255,255,0.6)] font-black text-base sm:text-lg">✕</span>';
+        }
+        div.appendChild(badge);
+      }
+
+      div.addEventListener('dragstart', (e) => {
+        if (gameState.submitted || isEvaluating) {
+          e.preventDefault();
+          return;
+        }
+        playSound('pickup');
+        e.dataTransfer.setData('text/plain', card.id);
+        div.classList.add('dragging');
+      });
+
+      div.addEventListener('dragend', () => {
+        div.classList.remove('dragging');
+        selectedCardId = null;
+        renderBoard();
+      });
+
+      div.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (gameState.submitted || isEvaluating) return;
+
+        if (!selectedCardId) {
+          if (location === 'slot') {
+            moveCardToPool(card.id);
+          } else {
+            selectedCardId = card.id;
+            playSound('pickup');
+            renderBoard();
+          }
+          return;
+        }
+
+        if (selectedCardId === card.id) {
+          selectedCardId = null;
+          playSound('drop');
+          renderBoard();
+          return;
+        }
+
+        if (location === 'slot') {
+          const slotIdx = gameState.slots.indexOf(slotObj);
+          const incomingCard = selectedCardId;
+          selectedCardId = null;
+          placeCardInSlot(incomingCard, slotIdx);
+        } else {
+          selectedCardId = card.id;
+          playSound('pickup');
+          renderBoard();
+        }
+      });
+
+      div.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'touch' || e.pointerType === 'pen') {
+          handleTouchDrag(e, card);
+        }
+      });
+
+      return div;
+    }
+
+    function handleTouchDrag(e, card) {
+      if (gameState.submitted || isEvaluating) return;
+
+      const ghost = document.getElementById('drag-ghost');
+      const startX = e.clientX;
+      const startY = e.clientY;
+      let isDragging = false;
+
+      if (e.target && e.target.setPointerCapture) {
+        try { e.target.setPointerCapture(e.pointerId); } catch (_) {}
+      }
+
+      const onTouchMove = (me) => {
+        if (!isDragging && Math.hypot(me.clientX - startX, me.clientY - startY) > 8) {
+          isDragging = true;
+          selectedCardId = null;
+          playSound('pickup');
+          if (ghost) {
+            ghost.style.display = 'flex';
+            ghost.style.backgroundColor = card.color;
+            ghost.innerHTML = formatGodnameLines(card.godname);
+          }
+        }
+
+        if (isDragging) {
+          if (me.cancelable) me.preventDefault();
+          if (ghost) {
+            ghost.style.left = `${me.clientX}px`;
+            ghost.style.top = `${me.clientY}px`;
+          }
+        }
+      };
+
+      const onTouchEnd = (ue) => {
+        window.removeEventListener('pointermove', onTouchMove);
+        window.removeEventListener('pointerup', onTouchEnd);
+        window.removeEventListener('pointercancel', onTouchEnd);
+
+        if (e.target && e.target.releasePointerCapture) {
+          try { e.target.releasePointerCapture(e.pointerId); } catch (_) {}
+        }
+
+        if (ghost) ghost.style.display = 'none';
+
+        if (isDragging) {
+          selectedCardId = null;
+          const dropTarget = document.elementFromPoint(ue.clientX, ue.clientY);
+          const slotRow = dropTarget ? dropTarget.closest('#right-targets-grid > div') : null;
+          const slotEl = dropTarget ? dropTarget.closest('.drop-slot') : (slotRow ? slotRow.querySelector('.drop-slot') : null);
+          const poolEl = dropTarget ? (dropTarget.closest('#left-pool-grid') || dropTarget.closest('#mobile-dock-cards') || dropTarget.closest('#mobile-cards-dock')) : null;
+
+          if (slotEl && slotEl.dataset.slotIndex !== undefined) {
+            placeCardInSlot(card.id, parseInt(slotEl.dataset.slotIndex, 10));
+          } else if (poolEl) {
+            moveCardToPool(card.id);
+          } else {
+            renderBoard();
+          }
+        }
+      };
+
+      window.addEventListener('pointermove', onTouchMove, { passive: false });
+      window.addEventListener('pointerup', onTouchEnd);
+      window.addEventListener('pointercancel', onTouchEnd);
+    }
+
+    function placeCardInSlot(cardId, targetSlotIndex) {
+      if (gameState.submitted || isEvaluating) return;
+
+      const targetSlot = gameState.slots[targetSlotIndex];
+      if (!targetSlot) return;
+
+      selectedCardId = null;
+
+      const prevPoolIdx = gameState.poolCardIds.indexOf(cardId);
+      const prevSlot = gameState.slots.find(s => s.placedCardId === cardId);
+      const displacedCardId = targetSlot.placedCardId;
+
+      if (displacedCardId === cardId) {
+        renderBoard();
+        return;
+      }
+
+      if (prevPoolIdx !== -1) {
+        gameState.poolCardIds.splice(prevPoolIdx, 1);
+      }
+      if (prevSlot) {
+        prevSlot.placedCardId = null;
+      }
+
+      if (displacedCardId) {
+        if (prevSlot) {
+          // Swap: displaced card into previous slot
+          prevSlot.placedCardId = displacedCardId;
+        } else {
+          // Displace back into pool
+          if (!gameState.poolCardIds.includes(displacedCardId)) {
+            gameState.poolCardIds.push(displacedCardId);
+          }
+        }
+      }
+
+      targetSlot.placedCardId = cardId;
+      lastPlacedCardId = cardId;
+      playSound('drop');
+      renderBoard();
+    }
+
+    function moveCardToPool(cardId) {
+      if (gameState.submitted || isEvaluating) return;
+
+      selectedCardId = null;
+      const prevSlot = gameState.slots.find(s => s.placedCardId === cardId);
+      if (prevSlot) {
+        prevSlot.placedCardId = null;
+        if (!gameState.poolCardIds.includes(cardId)) {
+          gameState.poolCardIds.push(cardId);
+        }
+        playSound('drop');
+        renderBoard();
+      }
+    }
+
+    // 6. SEQUENTIAL GRADING
+    async function submitAnswers() {
+      if (gameState.submitted || isEvaluating) return;
+
+      isEvaluating = true;
+      selectedCardId = null;
+      renderBoard();
+
+      // Sequential grading: left column top-to-bottom (0,2,4,6,8), right column (1,3,5,7,9)
+      const leftIndices = [0, 2, 4, 6, 8];
+      const rightIndices = [1, 3, 5, 7, 9];
+      const evaluationOrder = [...leftIndices, ...rightIndices].filter(idx => idx < gameState.slots.length);
+
+      let correctCount = 0;
+
+      for (const slotIdx of evaluationOrder) {
+        const slot = gameState.slots[slotIdx];
+        if (!slot.placedCardId) continue;
+
+        const slotEl = document.querySelector(`.drop-slot[data-slot-index="${slotIdx}"]`);
+        const cardEl = slotEl ? slotEl.querySelector('.game-card') : null;
+        if (cardEl) {
+          cardEl.classList.add('card-evaluating');
+        } else if (slotEl) {
+          slotEl.classList.add('card-evaluating');
+        }
+
+        // Wait ~260ms for authentic Wordwall cadence
+        await new Promise(r => setTimeout(r, 260));
+
+        if (cardEl) {
+          cardEl.classList.remove('card-evaluating');
+        }
+        if (slotEl) {
+          slotEl.classList.remove('card-evaluating');
+        }
+
+        const placedCard = gameState.cards.find(c => c.id === slot.placedCardId);
+        if (placedCard && placedCard.correctSign === slot.sign) {
+          slot.evalStatus = 'correct';
+          correctCount++;
+          gameState.score = correctCount;
+          playSound('correct');
+          renderBoard();
+        } else {
+          slot.evalStatus = 'wrong';
+          playSound('wrong');
+          renderBoard();
+          const targetSlotEl = document.querySelector(`.drop-slot[data-slot-index="${slotIdx}"]`);
+          const wrongCardEl = targetSlotEl ? targetSlotEl.querySelector('.game-card') : null;
+          if (wrongCardEl) {
+            wrongCardEl.classList.add('shake-wrong');
+            wrongCardEl.addEventListener('animationend', () => {
+              wrongCardEl.classList.remove('shake-wrong');
+            }, { once: true });
+          }
+        }
+
+        updateScoreDisplay();
+      }
+
+      gameState.submitted = true;
+      isEvaluating = false;
+      renderBoard();
+
+      setTimeout(() => {
+        fireConfetti(120);
+        playSound('fanfare');
+        showResultModal();
+      }, 700);
+    }
+
+    function fillCorrectAnswers() {
+      if (isEvaluating) return;
+
+      gameState.poolCardIds = [];
+      gameState.slots.forEach(slot => {
+        const matchingCard = gameState.cards.find(c => c.correctSign === slot.sign);
+        if (matchingCard) {
+          slot.placedCardId = matchingCard.id;
+          slot.evalStatus = 'correct';
+        }
+      });
+      gameState.submitted = true;
+      gameState.score = gameState.slots.length;
+      updateScoreDisplay();
+      playSound('fanfare');
+      fireConfetti(80);
+      renderBoard();
+    }
+
+    function updateScoreDisplay() {
+      const scoreEl = document.getElementById('score-display');
+      if (scoreEl) {
+        scoreEl.textContent = (gameState && gameState.score !== undefined) ? gameState.score : 0;
+        const container = scoreEl.parentElement;
+        if (container) {
+          container.classList.remove('scale-110');
+          void container.offsetWidth;
+          container.classList.add('scale-110', 'transition-transform', 'duration-150');
+          setTimeout(() => container.classList.remove('scale-110'), 150);
+        }
+      }
+    }
+
+    // 7. CONTROLS & TIMERS
+    function resetBoard() {
+      if (isEvaluating) return;
+      if (confettiAnimationId) {
+        cancelAnimationFrame(confettiAnimationId);
+        confettiAnimationId = null;
+        confettiParticles = [];
+        const canvas = document.getElementById('fx-canvas');
+        if (canvas) {
+          const ctx = canvas.getContext('2d');
+          if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+      initGameBoard(activeDataset);
+      renderBoard();
+      resetTimer();
+    }
+
+    function startRandomGame() {
+      if (isEvaluating) return;
+      if (confettiAnimationId) {
+        cancelAnimationFrame(confettiAnimationId);
+        confettiAnimationId = null;
+        confettiParticles = [];
+        const canvas = document.getElementById('fx-canvas');
+        if (canvas) {
+          const ctx = canvas.getContext('2d');
+          if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+      const randomDs = pickRandomDataset();
+      if (randomDs && Array.isArray(randomDs.items)) {
+        activeDataset = [...randomDs.items];
+        activeDatasetName = randomDs.name;
+        activeDatasetId = randomDs.id;
+      }
+      updateActiveDatasetUI();
+      initGameBoard(activeDataset);
+      renderBoard();
+      resetTimer();
+    }
+
+    function updateActiveDatasetUI() {
+      const pillName = document.getElementById('active-dataset-name');
+      if (pillName) {
+        pillName.textContent = activeDatasetName || 'Random Set';
+      }
+      const jsonEditor = document.getElementById('json-editor');
+      if (jsonEditor) {
+        jsonEditor.value = JSON.stringify(activeDataset, null, 2);
+      }
+      updateDatasetSelectDropdown();
+      updateDatasetRegistryUI();
+    }
+
+    function updateDatasetSelectDropdown() {
+      const select = document.getElementById('dataset-select');
+      if (!select) return;
+
+      // Add missing datasets from registry
+      DATASET_REGISTRY.forEach(ds => {
+        let opt = Array.from(select.options).find(o => o.value === ds.id);
+        if (!opt) {
+          opt = document.createElement('option');
+          opt.value = ds.id;
+          opt.textContent = ds.name;
+          select.appendChild(opt);
+        } else {
+          if (ds.name) opt.textContent = ds.name;
+        }
+      });
+
+      // Deduplicate options by value to prevent any duplicate entries
+      const seenValues = new Set();
+      Array.from(select.options).forEach(opt => {
+        if (seenValues.has(opt.value)) {
+          opt.remove();
+        } else {
+          seenValues.add(opt.value);
+        }
+      });
+
+      let matched = false;
+      for (let i = 0; i < select.options.length; i++) {
+        if (select.options[i].value === activeDatasetId || select.options[i].text === activeDatasetName) {
+          select.selectedIndex = i;
+          matched = true;
+          break;
+        }
+      }
+      if (!matched) {
+        const randomOpt = Array.from(select.options).find(o => o.value === 'random');
+        if (randomOpt) randomOpt.selected = true;
+      }
+    }
+
+    function updateDatasetRegistryUI() {
+      const countEl = document.getElementById('registered-datasets-count');
+      if (countEl) {
+        countEl.textContent = `${DATASET_REGISTRY.length} Dataset${DATASET_REGISTRY.length !== 1 ? 's' : ''} Registered`;
+      }
+      const listContainer = document.getElementById('dataset-registry-list');
+      if (!listContainer) return;
+      listContainer.innerHTML = '';
+      DATASET_REGISTRY.forEach(ds => {
+        const isActive = (activeDatasetName === ds.name || activeDatasetId === ds.id);
+        const itemDiv = document.createElement('div');
+        itemDiv.className = `flex items-center justify-between p-2 rounded-lg border text-xs transition ${isActive ? 'bg-amber-100/90 border-amber-500 font-bold text-amber-950 shadow-xs' : 'bg-white border-stone-200 text-stone-800 hover:bg-stone-50'}`;
+        itemDiv.innerHTML = `
+          <div class="flex items-center gap-2 overflow-hidden mr-2">
+            <span class="w-2 h-2 rounded-full ${isActive ? 'bg-emerald-500 animate-pulse' : 'bg-stone-300'} flex-shrink-0"></span>
+            <span class="truncate font-semibold">${ds.name}</span>
+            <span class="text-[10px] text-stone-500 whitespace-nowrap">(${ds.items ? ds.items.length : 0} items)</span>
+          </div>
+          <button type="button" onclick="selectDatasetById('${ds.id}')" class="px-2.5 py-1 rounded text-[11px] font-bold ${isActive ? 'bg-amber-600 text-white' : 'bg-stone-200 hover:bg-amber-600 hover:text-white text-stone-700'} transition flex-shrink-0">
+            ${isActive ? 'Active' : 'Play Set'}
+          </button>
+        `;
+        listContainer.appendChild(itemDiv);
+      });
+    }
+
+    function selectDatasetById(id) {
+      if (isEvaluating) return;
+      const ds = DATASET_REGISTRY.find(d => d.id === id);
+      if (!ds) return;
+      activeDataset = [...ds.items];
+      activeDatasetName = ds.name;
+      activeDatasetId = ds.id;
+      updateActiveDatasetUI();
+      resetBoard();
+      closeDataModal();
+    }
+
+    function switchDatasetMode(mode) {
+      if (isEvaluating) return;
+      currentDatasetMode = mode;
+      if (mode === 'random') {
+        startRandomGame();
+        return;
+      }
+      const found = DATASET_REGISTRY.find(d => d.id === mode);
+      if (found) {
+        activeDataset = [...found.items];
+        activeDatasetName = found.name;
+        activeDatasetId = found.id;
+      } else if (mode === 'json10_exact') {
+        activeDataset = [...ATTACHED_JSON_EXACT];
+        activeDatasetName = 'Attached jain-quest.json (Exact)';
+        activeDatasetId = 'json10_exact';
+      } else if (mode === 'json10_authentic' || mode === 'authentic_10') {
+        activeDataset = [...AUTHENTIC_SET_DATASET];
+        activeDatasetName = 'Authentic Signs (10 भगवान)';
+        activeDatasetId = 'authentic_10';
+      } else if (mode === 'video_page1' || mode === 'video_set1') {
+        activeDataset = [...VIDEO_PAGE1_DATASET];
+        activeDatasetName = 'Video Set 1 (10 भगवान)';
+        activeDatasetId = 'video_set1';
+      } else if (mode === 'video_page2' || mode === 'video_set2') {
+        activeDataset = [...VIDEO_PAGE2_DATASET];
+        activeDatasetName = 'Video Set 2 (10 भगवान)';
+        activeDatasetId = 'video_set2';
+      }
+      updateActiveDatasetUI();
+      resetBoard();
+    }
+
+    function resetTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+      timerSeconds = 0;
+      isPaused = false;
+      const pauseBtn = document.getElementById('pause-btn');
+      if (pauseBtn) pauseBtn.classList.remove('bg-amber-600');
+      updateTimerUI();
+      startTimer();
+    }
+
+    function startTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+      timerInterval = setInterval(() => {
+        if (!isPaused && (!gameState || !gameState.submitted)) {
+          timerSeconds++;
+          updateTimerUI();
+        }
+      }, 1000);
+    }
+
+    function updateTimerUI() {
+      const mins = Math.floor(timerSeconds / 60);
+      const secs = timerSeconds % 60;
+      const timerEl = document.getElementById('timer-display');
+      if (timerEl) {
+        timerEl.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+      }
+    }
+
+    function togglePause() {
+      isPaused = !isPaused;
+      const pauseBtn = document.getElementById('pause-btn');
+      if (isPaused) {
+        pauseBtn.classList.add('bg-amber-600');
+      } else {
+        pauseBtn.classList.remove('bg-amber-600');
+      }
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      document.getElementById('sound-on-icon').classList.toggle('hidden', !soundEnabled);
+      document.getElementById('sound-off-icon').classList.toggle('hidden', soundEnabled);
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        document.exitFullscreen().catch(() => {});
+      }
+    }
+
+    // Mobile Dock Drawer Toggling
+    let isDockExpanded = false;
+    function toggleDockExpand(forceExpand = null) {
+      const dock = document.getElementById('mobile-cards-dock');
+      const dockCards = document.getElementById('mobile-dock-cards');
+      const toggleText = document.getElementById('dock-toggle-text');
+      if (!dockCards || !dock) return;
+
+      if (dock.classList.contains('dock-minimized')) {
+        dock.classList.remove('dock-minimized');
+        if (toggleText) toggleText.textContent = isDockExpanded ? 'Collapse Tray ▼' : 'Expand Tray ▲';
+        return;
+      }
+
+      isDockExpanded = forceExpand !== null ? forceExpand : !isDockExpanded;
+      if (isDockExpanded) {
+        dockCards.classList.remove('overflow-x-auto', 'flex-nowrap');
+        dockCards.classList.add('flex-wrap', 'max-h-60', 'overflow-y-auto');
+        if (toggleText) toggleText.textContent = 'Collapse Tray ▼';
+      } else {
+        dockCards.classList.remove('flex-wrap', 'max-h-60', 'overflow-y-auto');
+        dockCards.classList.add('overflow-x-auto', 'flex-nowrap');
+        if (toggleText) toggleText.textContent = 'Expand Tray ▲';
+      }
+    }
+
+    // 8. DATA & LOGO MODAL HANDLERS
+    function openDataModal() {
+      updateDatasetRegistryUI();
+      document.getElementById('data-modal').classList.remove('hidden');
+      document.getElementById('data-modal').classList.add('flex');
+    }
+
+    function closeDataModal() {
+      document.getElementById('data-modal').classList.add('hidden');
+      document.getElementById('data-modal').classList.remove('flex');
+    }
+
+    function handleLogoUpload(event, imgElementId, fallbackElementId) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imgEl = document.getElementById(imgElementId);
+        const fallbackEl = document.getElementById(fallbackElementId);
+        imgEl.src = e.target.result;
+        imgEl.style.display = 'block';
+        if (fallbackEl) fallbackEl.style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function handleJsonFileUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        document.getElementById('json-editor').value = e.target.result;
+      };
+      reader.readAsText(file);
+    }
+
+    async function handleMultipleJsonUpload(event) {
+      const files = event.target.files;
+      if (!files || files.length === 0) return;
+
+      let loadedCount = 0;
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        try {
+          const text = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = () => reject(reader.error);
+            reader.readAsText(file);
+          });
+          const parsed = JSON.parse(text);
+          if (validateDataset(parsed)) {
+            const cleanName = file.name.replace(/\.[^/.]+$/, "");
+            registerCustomDataset(cleanName, parsed);
+            loadedCount++;
+          } else if (Array.isArray(parsed)) {
+            const added = registerCustomDatasets(parsed);
+            loadedCount += added;
+          }
+        } catch (err) {
+          console.warn('Failed to parse uploaded JSON file:', file.name, err);
+        }
+      }
+
+      updateDatasetRegistryUI();
+      updateDatasetSelectDropdown();
+      if (loadedCount > 0) {
+        const latestDs = DATASET_REGISTRY[DATASET_REGISTRY.length - 1];
+        if (latestDs) {
+          activeDataset = [...latestDs.items];
+          activeDatasetName = latestDs.name;
+          activeDatasetId = latestDs.id;
+          updateActiveDatasetUI();
+          resetBoard();
+        }
+      }
+      event.target.value = '';
+    }
+
+    function applyCustomJson() {
+      try {
+        const raw = document.getElementById('json-editor').value;
+        const parsed = JSON.parse(raw);
+        if (!validateDataset(parsed)) {
+          throw new Error('JSON must be a non-empty array of objects with "godname" and "sign" string properties.');
+        }
+        activeDataset = parsed.slice(0, 10);
+        activeDatasetName = 'Custom Editor Set';
+        registerCustomDataset(activeDatasetName, activeDataset);
+        activeDatasetId = DATASET_REGISTRY[DATASET_REGISTRY.length - 1].id;
+        currentDatasetMode = 'custom';
+        updateActiveDatasetUI();
+        resetBoard();
+        closeDataModal();
+      } catch (err) {
+        const editor = document.getElementById('json-editor');
+        if (editor) {
+          editor.classList.add('border-red-600', 'bg-red-50');
+          setTimeout(() => editor.classList.remove('border-red-600', 'bg-red-50'), 1500);
+        }
+      }
+    }
+
+    function downloadCurrentJson() {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(document.getElementById('json-editor').value);
+      const a = document.createElement('a');
+      a.setAttribute("href", dataStr);
+      a.setAttribute("download", "jain-quest.json");
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
+    function showResultModal() {
+      document.getElementById('final-score-text').textContent = `${gameState.score} / ${gameState.cards.length}`;
+      document.getElementById('final-time-text').textContent = document.getElementById('timer-display').textContent;
+      const subtitleEl = document.getElementById('result-subtitle');
+      if (subtitleEl) {
+        if (gameState.score === gameState.cards.length && gameState.cards.length > 0) {
+          subtitleEl.textContent = 'शानदार! आपने सभी 10 सही उत्तर दिए हैं। 🌟';
+        } else {
+          subtitleEl.textContent = "अच्छा प्रयास! सही उत्तर देखने के लिए 'Show Correct Answers' दबाएँ।";
+        }
+      }
+      document.getElementById('result-modal').classList.remove('hidden');
+      document.getElementById('result-modal').classList.add('flex');
+    }
+
+    function closeResultModal() {
+      document.getElementById('result-modal').classList.add('hidden');
+      document.getElementById('result-modal').classList.remove('flex');
+    }
+
+    // 9. WINDOW ONLOAD INITIALIZATION
+    window.addEventListener('DOMContentLoaded', async () => {
+      try {
+        const response = await fetch('./jain-quest.json', { cache: 'no-store' });
+        if (response.ok) {
+          const externalJson = await response.json();
+          if (validateDataset(externalJson)) {
+            registerCustomDataset('Loaded jain-quest.json', externalJson);
+          }
+        }
+      } catch (err) {
+        // Fallbacks loaded
+      }
+
+      // Automatically picks a random dataset via startRandomGame() and updates UI indicators
+      startRandomGame();
+    });
+  </script>
+</body>
+</html>
