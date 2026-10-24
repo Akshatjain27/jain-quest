@@ -1,11 +1,15 @@
 const { execSync } = require('child_process');
 
 const suites = [
+  'tests/test_set1_set2_schema.js',
   'tests/test_20q_datasets.js',
   'tests/test_landing_ui.js',
+  'tests/test_timer30_lives3.js',
   'tests/test_lifelines_timer.js',
   'tests/test_instant_validation.js',
   'tests/test_progression_flow.js',
+  'tests/test_bg_music_gameover_sound.js',
+  'tests/test_exit_home_nav.js',
   'tests/test_full_game_integrity.js',
   'tests/test_dataset_engine.js',
   'tests/test_layout_structure.js',

@@ -38,7 +38,17 @@ assert(html.includes('deductLife'), 'deductLife function must exist');
 assert(html.includes('resetCountdownTimer'), 'resetCountdownTimer function must exist');
 assert(html.includes('pageTransitionTimeout'), 'pageTransitionTimeout variable must exist');
 
-// 6. Verify index.html is completely synchronized with jain_quest_matching_game.html
+// 6. Verify Modern Arcade Enhancements (30s timer, 3 Lives, Exit button, Audio loop)
+assert(html.includes('id="exit-game-btn"'), 'Header must have Exit button');
+assert(html.includes('startBackgroundMusic'), 'Must define startBackgroundMusic');
+assert(html.includes('stopBackgroundMusic'), 'Must define stopBackgroundMusic');
+assert(html.includes('playGameOverSound'), 'Must define playGameOverSound');
+assert(html.includes('updateLivesUI'), 'Must define updateLivesUI');
+assert(html.includes('timerRemaining = 30'), 'Timer must start at 30 seconds');
+assert(!html.includes('id="helper-banner"'), 'Helper banner must be removed');
+assert(!html.includes('Lifeline') && !html.includes('लाइफलाइन'), 'Lifeline wording must be removed in favor of Life');
+
+// 7. Verify index.html is completely synchronized with jain_quest_matching_game.html
 const indexHtml = fs.readFileSync('index.html', 'utf8');
 assert.strictEqual(indexHtml, html, 'index.html must match jain_quest_matching_game.html exactly');
 

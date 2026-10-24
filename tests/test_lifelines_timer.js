@@ -24,7 +24,7 @@ assert(!headerMatch[0].includes('id="new-game-btn"'), 'new-game-btn must be remo
 assert(html.includes('function startCountdownTimer'), 'Must define startCountdownTimer');
 assert(html.includes('function stopCountdownTimer'), 'Must define stopCountdownTimer');
 assert(html.includes('function resetCountdownTimer'), 'Must define resetCountdownTimer');
-assert(html.includes('function updateLifelinesUI'), 'Must define updateLifelinesUI');
+assert(html.includes('function updateLivesUI') || html.includes('function updateLifelinesUI'), 'Must define updateLivesUI');
 assert(html.includes('function deductLife'), 'Must define deductLife');
 
 // 4. In-memory logic simulation via vm
@@ -82,7 +82,7 @@ const bridge = vm.runInContext(`
     setGameState: (s) => { gameState = s; },
     getTimerRemaining: () => timerRemaining,
     deductLife,
-    updateLifelinesUI,
+    updateLivesUI,
     resetCountdownTimer,
     stopCountdownTimer,
     setTriggerGameOver: (fn) => { triggerGameOver = fn; }
@@ -112,9 +112,9 @@ assert.strictEqual(bridge.getGameState().lives, 0, 'Lives should reach 0');
 assert.strictEqual(gameOverReason, 'lives', 'triggerGameOver should be called with "lives" when lives reach 0');
 
 // Test countdown timer logic
-bridge.resetCountdownTimer(60);
-assert.strictEqual(bridge.getTimerRemaining(), 60, 'Timer should reset to 60');
-assert.strictEqual(elements['countdown-timer'].textContent, '1:00', 'Timer display should show 1:00');
+bridge.resetCountdownTimer(30);
+assert.strictEqual(bridge.getTimerRemaining(), 30, 'Timer should reset to 30');
+assert.strictEqual(elements['countdown-timer'].textContent, '30', 'Timer display should show 30');
 
 bridge.stopCountdownTimer();
 

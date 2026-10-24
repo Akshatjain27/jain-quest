@@ -10,12 +10,12 @@ assert(html.includes('handleSlotAssignment'), 'handleSlotAssignment must be expl
 assert(html.includes('handlePageComplete'), 'handlePageComplete callback must be defined');
 
 // Verify Helper Banner Update
-const bannerMatch = html.match(/id="helper-banner"[\s\S]*?<\/div>/);
-assert(bannerMatch, 'Helper banner must exist');
-const bannerContent = bannerMatch[0];
-assert(!bannerContent.includes('Submit Answers'), 'Helper banner must not mention Submit Answers');
+assert(!html.includes('id="helper-banner"'), 'Helper banner must be removed from playfield');
+assert(!html.includes('id="submit-btn"'), 'submit-btn must be removed');
+// Banner content check removed as banner is obsolete
+// Submit answers checked above
 assert(!html.includes('फिर Submit Answers दबाएँ'), 'Helper banner must not mention Submit Answers');
-assert(bannerContent.includes('उत्तर तुरंत जाँचा जाएगा'), 'Helper banner must explain instant check');
+// Instant validation verified via gameplay mechanics
 
 // 2. Unit logic simulation (from Task 4 brief contract)
 function handleAssignment(state, cardId, slotIndex) {
@@ -23,7 +23,7 @@ function handleAssignment(state, cardId, slotIndex) {
   const slot = state.slots[slotIndex];
   if (!card || !slot || slot.placedCardId) return;
 
-  if (card.correctSign === slot.sign) {
+  if ((card.correctAnswer || card.correctSign) === (slot.answer || slot.sign)) {
     slot.placedCardId = card.id;
     slot.evalStatus = 'correct';
     state.score++;
@@ -37,8 +37,8 @@ function handleAssignment(state, cardId, slotIndex) {
 }
 
 const state = {
-  cards: [{ id: 'c1', correctSign: 'सिंह' }, { id: 'c2', correctSign: 'बैल' }],
-  slots: [{ sign: 'सिंह', placedCardId: null }, { sign: 'बैल', placedCardId: null }],
+  cards: [{ id: 'c1', question: 'ऋषभदेव जी', correctAnswer: 'बैल', correctSign: 'बैल' }, { id: 'c2', question: 'अजितनाथ जी', correctAnswer: 'हाथी', correctSign: 'हाथी' }],
+  slots: [{ answer: 'बैल', sign: 'बैल', placedCardId: null }, { answer: 'घोड़ा', sign: 'घोड़ा', placedCardId: null }],
   poolCardIds: ['c1', 'c2'],
   score: 0,
   lives: 3
@@ -52,7 +52,7 @@ assert.strictEqual(state.slots[0].placedCardId, 'c1');
 assert.strictEqual(state.lives, 3);
 
 // Test wrong placement
-state.slots[1].sign = 'हाथी';
+state.slots[1].sign = 'सिंह'; state.slots[1].answer = 'सिंह';
 const r2 = handleAssignment(state, 'c2', 1);
 assert.strictEqual(r2.status, 'wrong');
 assert.strictEqual(state.lives, 2);
@@ -143,12 +143,12 @@ bridge.setGameState({
   score: 0,
   lives: 3,
   cards: [
-    { id: 'c1', godname: 'ऋषभदेव जी', correctSign: 'बैल', color: '#ffecb3' },
-    { id: 'c2', godname: 'अजितनाथ जी', correctSign: 'हाथी', color: '#ffe082' }
+    { id: 'c1', question: 'ऋषभदेव जी', godname: 'ऋषभदेव जी', answer: 'बैल', correctAnswer: 'बैल', correctSign: 'बैल', color: '#ffecb3' },
+    { id: 'c2', question: 'अजितनाथ जी', godname: 'अजितनाथ जी', answer: 'हाथी', correctAnswer: 'हाथी', correctSign: 'हाथी', color: '#ffe082' }
   ],
   slots: [
-    { sign: 'बैल', placedCardId: null, evalStatus: null },
-    { sign: 'हाथी', placedCardId: null, evalStatus: null }
+    { answer: 'बैल', sign: 'बैल', placedCardId: null, evalStatus: null },
+    { answer: 'हाथी', sign: 'हाथी', placedCardId: null, evalStatus: null }
   ],
   poolCardIds: ['c1', 'c2'],
   submitted: false

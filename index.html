@@ -435,11 +435,11 @@
           </li>
           <li class="flex items-start gap-2.5">
             <span class="text-blue-600 font-bold text-base flex-shrink-0">⏱️</span>
-            <span><strong>1 मिनट प्रति पेज (60s Timer per Page):</strong> प्रत्येक पेज (10 प्रश्न) को हल करने के लिए 60 सेकंड का समय मिलेगा।</span>
+            <span><strong>30 सेकंड प्रति पेज (30s Timer per Page):</strong> प्रत्येक पेज (10 प्रश्न) को हल करने के लिए 30 सेकंड का समय मिलेगा।</span>
           </li>
           <li class="flex items-start gap-2.5">
             <span class="text-red-500 font-bold text-base flex-shrink-0">❤️</span>
-            <span><strong>3 लाइफलाइन (3 Lifelines):</strong> खेल में कुल 3 लाइफलाइन (❤️❤️❤️) हैं। गलत मिलान पर 1 लाइफलाइन घटेगी।</span>
+            <span><strong>3 लाइफ (3 Life):</strong> खेल में कुल 3 लाइफ (❤️❤️❤️) हैं। गलत मिलान पर 1 लाइफ घटेगी।</span>
           </li>
           <li class="flex items-start gap-2.5">
             <span class="text-emerald-600 font-bold text-base flex-shrink-0">⚡</span>
@@ -447,7 +447,7 @@
           </li>
           <li class="flex items-start gap-2.5">
             <span class="text-purple-600 font-bold text-base flex-shrink-0">⚠️</span>
-            <span><strong>गेम ओवर (Game Over):</strong> 3 लाइफलाइन समाप्त होने या समय खत्म होने पर गेम समाप्त हो जाएगा।</span>
+            <span><strong>गेम ओवर (Game Over):</strong> 3 लाइफ समाप्त होने या समय खत्म होने पर गेम समाप्त हो जाएगा।</span>
           </li>
         </ul>
       </div>
@@ -521,7 +521,7 @@
         </div>
       </div>
 
-      <!-- Right: Page Indicator, Score, Lifelines, Countdown Timer, Sound & Fullscreen -->
+      <!-- Right: Page Indicator, Score, Life, Countdown Timer, Sound & Fullscreen -->
       <div class="flex items-center gap-1.5 sm:gap-2.5 flex-wrap justify-end">
         <!-- Page Indicator -->
         <div id="page-indicator" class="bg-amber-100/90 border border-amber-400 text-amber-950 font-bold px-2 sm:px-2.5 py-1 rounded-lg text-xs sm:text-sm shadow-sm whitespace-nowrap" title="Current Page">
@@ -534,21 +534,21 @@
           <span id="score-display">0 / 20</span>
         </div>
 
-        <!-- 3 Lifelines -->
-        <div id="lifelines-container" class="flex items-center gap-0.5 bg-rose-50 border border-rose-300 px-2 py-1 rounded-lg text-sm sm:text-base shadow-sm select-none" title="3 Lifelines">
+        <!-- 3 Life -->
+        <div id="lifelines-container" class="flex items-center gap-0.5 bg-rose-50 border border-rose-300 px-2 py-1 rounded-lg text-sm sm:text-base shadow-sm select-none" title="3 Life">
           <span class="heart-icon transition-transform inline-block">❤️</span>
           <span class="heart-icon transition-transform inline-block">❤️</span>
           <span class="heart-icon transition-transform inline-block">❤️</span>
         </div>
 
-        <!-- 1-Minute Countdown Timer -->
-        <div class="bg-amber-950 text-amber-50 px-2 sm:px-2.5 py-1 rounded-lg font-mono font-bold text-xs sm:text-sm shadow-inner flex items-center gap-1.5" title="Countdown Timer (1 Minute)">
+        <!-- 30-Second Countdown Timer -->
+        <div class="bg-amber-950 text-amber-50 px-2 sm:px-3 py-1 rounded-xl font-mono font-bold text-xs sm:text-sm shadow-inner flex items-center gap-1.5" title="Countdown Timer (30s)">
           <svg class="w-3.5 h-3.5 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10" stroke-width="2"></circle>
             <path stroke-linecap="round" stroke-width="2" d="M12 6v6l4 2"></path>
           </svg>
-          <span id="countdown-timer">1:00</span>
-          <span id="timer-display" class="hidden">1:00</span>
+          <span id="countdown-timer" class="text-3xl sm:text-4xl font-extrabold font-mono text-amber-300 leading-none">30</span>
+          <span id="timer-display" class="hidden">30</span>
         </div>
 
         <!-- Sound Toggle -->
@@ -567,6 +567,11 @@
             <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
           </svg>
         </button>
+
+        <!-- Exit Game Button -->
+        <button id="exit-game-btn" onclick="returnToStartScreen()" class="px-2.5 py-1 rounded-lg bg-stone-800/90 hover:bg-stone-700 text-amber-200 text-xs sm:text-sm font-bold border border-amber-600/40 flex items-center gap-1 shadow transition" title="Return to Home Screen">
+          <span>🚪 Exit</span>
+        </button>
       </div>
 
     </div>
@@ -577,14 +582,6 @@
        ========================================================================= -->
   <main class="relative z-10 flex-1 w-full max-w-[1600px] mx-auto px-2 sm:px-5 py-2 flex flex-col justify-center pb-36 lg:pb-2">
 
-    <!-- Helper banner -->
-    <div id="helper-banner" class="mb-2 flex items-center justify-between bg-amber-950/75 text-amber-50 text-xs sm:text-sm px-3 py-1.5 rounded-lg backdrop-blur-sm">
-      <div class="flex items-center gap-2">
-        <span class="bg-amber-400 text-amber-950 font-extrabold px-2 py-0.5 rounded text-xs">HOW TO PLAY</span>
-        <span>बाईं ओर (या नीचे ट्रे) से <strong>तीर्थंकर भगवान</strong> का कार्ड खींचकर या क्लिक करके सही <strong>चिह्न (Sign)</strong> के बॉक्स में रखें — उत्तर तुरंत जाँचा जाएगा!</span>
-      </div>
-      <button onclick="resetBoard()" class="text-amber-300 hover:text-white font-bold underline ml-2 whitespace-nowrap">Reset Board</button>
-    </div>
 
     <!-- Main Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6 items-stretch my-auto">
@@ -779,9 +776,9 @@
       <h2 class="text-3xl font-extrabold tracking-wide mb-2 drop-shadow">Page 1 Complete! 🎉</h2>
       <p class="text-xl font-bold text-amber-100 mb-4">शानदार! Page 2 शुरू हो रहा है...</p>
       <div class="inline-flex items-center gap-2.5 bg-amber-900/50 px-4 py-2 rounded-full text-sm font-semibold text-amber-200">
-        <span>⏱️ फ्रेश 60s टाइमर</span>
+        <span>⏱️ फ्रेश 30s टाइमर</span>
         <span>•</span>
-        <span>❤️ लाइफलाइन जारी रहेंगी</span>
+        <span>❤️ लाइफ जारी रहेंगी</span>
       </div>
     </div>
   </div>
@@ -795,7 +792,7 @@
         💔
       </div>
       <h2 class="text-2xl sm:text-3xl font-extrabold text-stone-900 mb-1">खेल समाप्त (Game Over)</h2>
-      <p id="gameover-reason" class="text-base font-bold text-red-600 mb-4">3 गलत उत्तर (All 3 Lifelines Used)</p>
+      <p id="gameover-reason" class="text-base font-bold text-red-600 mb-4">3 गलत उत्तर (All 3 Lives Lost)</p>
 
       <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 shadow-inner">
         <div class="text-xs uppercase tracking-wider text-stone-500 font-bold mb-1">कुल स्कोर (Final Score)</div>
@@ -803,10 +800,7 @@
       </div>
 
       <div class="flex items-center justify-center gap-3">
-        <button id="gameover-start-btn" onclick="returnToStartScreen()" class="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-extrabold text-base shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2 cursor-pointer" title="Return to Start Screen">
-          <span>🏠</span>
-          <span>स्टार्ट स्क्रीन (Start Screen)</span>
-        </button>
+        <button id="gameover-start-btn" onclick="returnToStartScreen()" class="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-extrabold text-base shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2 cursor-pointer" title="Return to Home Screen">🏠 Home (होम)</button>
       </div>
     </div>
   </div>
@@ -828,10 +822,7 @@
       </div>
 
       <div class="flex items-center justify-center gap-3">
-        <button id="victory-start-btn" onclick="returnToStartScreen()" class="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 hover:from-amber-700 hover:to-orange-700 text-white font-extrabold text-base shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2 cursor-pointer" title="Play Again">
-          <span>🔄</span>
-          <span>फिर से खेलें (Play Again)</span>
-        </button>
+        <button id="victory-start-btn" onclick="returnToStartScreen()" class="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 hover:from-amber-700 hover:to-orange-700 text-white font-extrabold text-base shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2 cursor-pointer" title="Return to Home Screen">🏠 Home (होम)</button>
       </div>
     </div>
   </div>
@@ -841,6 +832,174 @@
        ========================================================================= -->
   <script>
     // 1. DATASETS
+    // Bundled from set-1.json (20 items)
+    const SET_1_SOURCE = [
+      {
+        "question": "कुंथुनाथ भगवान",
+        "answer": "बकरा"
+      },
+      {
+        "question": "विमलनाथ भगवान",
+        "answer": "शूकर"
+      },
+      {
+        "question": "धर्मनाथ भगवान",
+        "answer": "वज्रदंड"
+      },
+      {
+        "question": "अजितनाथ भगवान",
+        "answer": "हाथी"
+      },
+      {
+        "question": "आदिनाथ भगवान",
+        "answer": "बैल"
+      },
+      {
+        "question": "सुपार्श्वनाथ भगवान",
+        "answer": "स्वस्तिक"
+      },
+      {
+        "question": "पुष्पदंत भगवान",
+        "answer": "मगर"
+      },
+      {
+        "question": "शांतिनाथ भगवान",
+        "answer": "हिरण"
+      },
+      {
+        "question": "महावीर भगवान",
+        "answer": "सिंह"
+      },
+      {
+        "question": "मुनिसुव्रतनाथ भगवान",
+        "answer": "कछुआ"
+      },
+      {
+        "question": "संभवनाथ भगवान",
+        "answer": "घोड़ा"
+      },
+      {
+        "question": "सुमतिनाथ भगवान",
+        "answer": "चकवा"
+      },
+      {
+        "question": "श्रेयांसनाथ भगवान",
+        "answer": "गैंडा"
+      },
+      {
+        "question": "अनंतनाथ भगवान",
+        "answer": "सेही"
+      },
+      {
+        "question": "पद्मप्रभ भगवान",
+        "answer": "कमल"
+      },
+      {
+        "question": "शीतलनाथ भगवान",
+        "answer": "कल्पवृक्ष"
+      },
+      {
+        "question": "शांतिनाथ भगवान",
+        "answer": "मगर"
+      },
+      {
+        "question": "वासुपूज्य भगवान",
+        "answer": "भैंसा"
+      },
+      {
+        "question": "चन्द्रप्रभ भगवान",
+        "answer": "चन्द्रमा"
+      },
+      {
+        "question": "अभिनंदननाथ भगवान",
+        "answer": "बंदर"
+      }
+    ];
+
+    // Bundled from set-2.json (20 items)
+    const SET_2_SOURCE = [
+      {
+        "question": "कुंथुनाथ",
+        "answer": "सम्मेद शिखर"
+      },
+      {
+        "question": "महावीर",
+        "answer": "पावापुर"
+      },
+      {
+        "question": "वासुपूज्य",
+        "answer": "चंपापुर"
+      },
+      {
+        "question": "नेमिनाथ",
+        "answer": "गिरनार"
+      },
+      {
+        "question": "ऋषभनाथ",
+        "answer": "कैलाश पर्वत"
+      },
+      {
+        "question": "बाहुबलि",
+        "answer": "पोदनपुर"
+      },
+      {
+        "question": "राम",
+        "answer": "तुंगीगिरी"
+      },
+      {
+        "question": "गुरुदत्त मुनि",
+        "answer": "द्रोणागिरी"
+      },
+      {
+        "question": "लव-कुश",
+        "answer": "पावागढ"
+      },
+      {
+        "question": "युधिष्ठिर",
+        "answer": "शत्रुंजय"
+      },
+      {
+        "question": "आचार्य कुंदकुंद",
+        "answer": "नियमसार"
+      },
+      {
+        "question": "आचार्य पुष्पदंत",
+        "answer": "षटखंडागम"
+      },
+      {
+        "question": "आचार्य उमास्वामी",
+        "answer": "तत्त्वार्थसूत्र"
+      },
+      {
+        "question": "आचार्य पूज्यपाद",
+        "answer": "सर्वार्थसिद्धि"
+      },
+      {
+        "question": "आचार्य यतिवृषभ",
+        "answer": "तिलोय पण्णत्ति"
+      },
+      {
+        "question": "आचार्य रविषेण",
+        "answer": "पद्मपुराण"
+      },
+      {
+        "question": "आचार्य जिनसेन",
+        "answer": "हरिवंश पुराण"
+      },
+      {
+        "question": "आचार्य समंतभद्र",
+        "answer": "आप्त मीमांसा"
+      },
+      {
+        "question": "आचार्य विद्यानंदी",
+        "answer": "आप्त परीक्षा"
+      },
+      {
+        "question": "आचार्य नेमिचंद्र",
+        "answer": "गोम्मटसार"
+      }
+    ];
+
     // Exact 10 items from user's attached jain-quest.json
     const ATTACHED_JSON_EXACT = [
       { "godname": "कुंथुनाथ भगवान", "sign": "स्वस्तिक" },
@@ -908,7 +1067,10 @@
 
     function validateDataset(data) {
       if (!Array.isArray(data) || data.length === 0) return false;
-      return data.every(item => item && typeof item.godname === 'string' && typeof item.sign === 'string');
+      return data.every(item => item && (
+        (typeof item.question === 'string' && typeof item.answer === 'string') ||
+        (typeof item.godname === 'string' && typeof item.sign === 'string')
+      ));
     }
 
     function pickRandomDataset() {
@@ -1042,7 +1204,23 @@
       ]
     };
     
+    const SET_1_GAME_20 = {
+      id: 'set_1',
+      name: 'Set 1 (तीर्थंकर एवं चिह्न)',
+      page1: SET_1_SOURCE.slice(0, 10),
+      page2: SET_1_SOURCE.slice(10, 20)
+    };
+    
+    const SET_2_GAME_20 = {
+      id: 'set_2',
+      name: 'Set 2 (निर्वाण क्षेत्र एवं ग्रंथ)',
+      page1: SET_2_SOURCE.slice(0, 10),
+      page2: SET_2_SOURCE.slice(10, 20)
+    };
+    
     const GAME_SETS_20 = [
+      SET_1_GAME_20,
+      SET_2_GAME_20,
       SET_1_VIDEO_COMBINED,
       SET_2_CANONICAL,
       SET_3_AUTHENTIC_MIX
@@ -1094,8 +1272,8 @@
 
     let selectedCardId = null;
     let lastPlacedCardId = null;
-    let timerRemaining = 60;
-    let timerSeconds = 60;
+    let timerRemaining = 30;
+    let timerSeconds = 30;
     let timerInterval = null;
     let pageTransitionTimeout = null;
     let isPaused = false;
@@ -1225,6 +1403,159 @@
       }
     }
 
+    // 3.1 CONTINUOUS AMBIENT BACKGROUND MUSIC & DRAMATIC GAME OVER SYNTHESIZER
+    let bgMusicInterval = null;
+    let bgMusicGain = null;
+    let bgMusicStep = 0;
+
+    function startBackgroundMusic() {
+      if (!soundEnabled) return;
+      if (gameState && gameState.screen && gameState.screen !== 'playing') return;
+      if (bgMusicInterval) return;
+
+      try {
+        const ctx = getAudioCtx();
+        if (!ctx) return;
+        if (ctx.state === 'suspended') ctx.resume();
+
+        bgMusicGain = ctx.createGain();
+        bgMusicGain.gain.setValueAtTime(0.05, ctx.currentTime);
+        bgMusicGain.connect(ctx.destination);
+
+        let filter = null;
+        try {
+          if (typeof ctx.createBiquadFilter === 'function') {
+            filter = ctx.createBiquadFilter();
+            filter.type = 'lowpass';
+            if (filter.frequency && typeof filter.frequency.setValueAtTime === 'function') {
+              filter.frequency.setValueAtTime(850, ctx.currentTime);
+            }
+            filter.connect(bgMusicGain);
+          }
+        } catch (e) {}
+
+        const outputNode = filter || bgMusicGain;
+        // Soothing meditative ambient pentatonic loop (C4, G4, A4, C5 and gentle harmonics)
+        const notes = [
+          261.63, 392.00, 440.00, 523.25, // C4, G4, A4, C5
+          440.00, 392.00, 329.63, 261.63, // A4, G4, E4, C4
+          349.23, 392.00, 440.00, 523.25, // F4, G4, A4, C5
+          392.00, 329.63, 293.66, 261.63  // G4, E4, D4, C4
+        ];
+
+        function playNextAmbientNote() {
+          if (!soundEnabled || (gameState && gameState.screen && gameState.screen !== 'playing') || isPaused) {
+            stopBackgroundMusic();
+            return;
+          }
+          try {
+            const now = ctx.currentTime;
+            const osc = ctx.createOscillator();
+            const noteGain = ctx.createGain();
+            osc.type = 'triangle';
+            const freq = notes[bgMusicStep % notes.length];
+            bgMusicStep++;
+
+            osc.frequency.setValueAtTime(freq, now);
+            noteGain.gain.setValueAtTime(0.001, now);
+            if (typeof noteGain.gain.linearRampToValueAtTime === 'function') {
+              noteGain.gain.linearRampToValueAtTime(0.05, now + 0.08);
+            }
+            if (typeof noteGain.gain.exponentialRampToValueAtTime === 'function') {
+              noteGain.gain.exponentialRampToValueAtTime(0.001, now + 1.1);
+            }
+            osc.connect(noteGain);
+            noteGain.connect(outputNode);
+            osc.start(now);
+            osc.stop(now + 1.15);
+          } catch (e) {}
+        }
+
+        playNextAmbientNote();
+        bgMusicInterval = setInterval(playNextAmbientNote, 650);
+      } catch (e) {
+        console.warn('Background music error:', e);
+      }
+    }
+
+    function stopBackgroundMusic() {
+      if (bgMusicInterval) {
+        clearInterval(bgMusicInterval);
+        bgMusicInterval = null;
+      }
+      if (bgMusicGain) {
+        const gainToDisconnect = bgMusicGain;
+        bgMusicGain = null;
+        try {
+          const ctx = getAudioCtx();
+          if (ctx) {
+            const now = ctx.currentTime;
+            if (typeof gainToDisconnect.gain.setValueAtTime === 'function') {
+              gainToDisconnect.gain.setValueAtTime(gainToDisconnect.gain.value || 0.05, now);
+            }
+            if (typeof gainToDisconnect.gain.linearRampToValueAtTime === 'function') {
+              gainToDisconnect.gain.linearRampToValueAtTime(0.0001, now + 0.25);
+            }
+            setTimeout(() => {
+              try {
+                if (gainToDisconnect) gainToDisconnect.disconnect();
+              } catch (e) {}
+            }, 280);
+          }
+        } catch (e) {}
+      }
+    }
+
+    function playGameOverSound() {
+      if (!soundEnabled) return;
+      try {
+        const ctx = getAudioCtx();
+        if (!ctx) return;
+        if (ctx.state === 'suspended') ctx.resume();
+        const now = ctx.currentTime;
+
+        // Descending minor chord sequence: Eb4 -> C4 -> Ab3 -> F3
+        const minorNotes = [311.13, 261.63, 207.65, 174.61]; // Eb4, C4, Ab3, F3
+        minorNotes.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sawtooth';
+          const start = now + idx * 0.18;
+          const dur = 0.55;
+          osc.frequency.setValueAtTime(freq, start);
+          gain.gain.setValueAtTime(0.24, start);
+          if (typeof gain.gain.exponentialRampToValueAtTime === 'function') {
+            gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
+          }
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(start);
+          osc.stop(start + dur + 0.05);
+        });
+
+        // Deep resonant bass gong decay
+        const bassOsc = ctx.createOscillator();
+        const bassGain = ctx.createGain();
+        bassOsc.type = 'sawtooth';
+        const bassStart = now + 0.35;
+        const bassDur = 1.6;
+        bassOsc.frequency.setValueAtTime(87.31, bassStart); // F2
+        if (typeof bassOsc.frequency.exponentialRampToValueAtTime === 'function') {
+          bassOsc.frequency.exponentialRampToValueAtTime(43.65, bassStart + bassDur); // descent to F1
+        }
+        bassGain.gain.setValueAtTime(0.32, bassStart);
+        if (typeof bassGain.gain.exponentialRampToValueAtTime === 'function') {
+          bassGain.gain.exponentialRampToValueAtTime(0.001, bassStart + bassDur);
+        }
+        bassOsc.connect(bassGain);
+        bassGain.connect(ctx.destination);
+        bassOsc.start(bassStart);
+        bassOsc.stop(bassStart + bassDur + 0.05);
+      } catch (e) {
+        console.warn('Game over sound error:', e);
+      }
+    }
+
     // 3.5 CANVAS CONFETTI ENGINE (Zero-Dependency)
     let confettiAnimationId = null;
     let confettiParticles = [];
@@ -1317,18 +1648,26 @@
     function initGameBoard(dataset) {
       const slice = (dataset && Array.isArray(dataset)) ? dataset.slice(0, 10) : [];
 
-      const cards = slice.map((item, idx) => ({
-        id: `card_${idx}`,
-        godname: (item.godname || '').trim(),
-        correctSign: (item.sign || '').trim(),
-        color: CARD_COLORS[idx % CARD_COLORS.length]
-      }));
+      const cards = slice.map((item, idx) => {
+        const questionText = (item.question || item.godname || '').trim();
+        const answerText = (item.answer || item.sign || '').trim();
+        return {
+          id: `card_${idx}`,
+          question: questionText,
+          answer: answerText,
+          correctAnswer: answerText,
+          godname: questionText,
+          correctSign: answerText,
+          color: CARD_COLORS[idx % CARD_COLORS.length]
+        };
+      });
 
-      const shuffledSigns = shuffleArray(slice.map(item => (item.sign || '').trim()));
+      const shuffledAnswers = shuffleArray(slice.map(item => (item.answer || item.sign || '').trim()));
 
-      const slots = shuffledSigns.map((signText, sIdx) => ({
+      const slots = shuffledAnswers.map((answerText, sIdx) => ({
         slotId: `slot_${sIdx}`,
-        sign: signText,
+        answer: answerText,
+        sign: answerText,
         placedCardId: null,
         evalStatus: null
       }));
@@ -1349,7 +1688,7 @@
       lastPlacedCardId = null;
       updateScoreDisplay();
       updatePageIndicator();
-      updateLifelinesUI();
+      updateLivesUI();
       updateUnplacedBadge();
     }
 
@@ -1377,26 +1716,32 @@
       initGameBoard(pageData);
       renderBoard();
       updatePageIndicator();
-      resetCountdownTimer(60);
+      timerRemaining = 30;
+      resetCountdownTimer(30);
+      if (soundEnabled && gameState && gameState.screen === 'playing') {
+        startBackgroundMusic();
+      }
     }
 
     function formatGodnameLines(name) {
-      const parts = name.trim().split(/\s+/);
+      const parts = (name || '').trim().split(/\s+/);
       if (parts.length >= 2) {
         const firstLine = parts.slice(0, -1).join(' ');
         const secondLine = parts[parts.length - 1];
         return `<div>${firstLine}</div><div>${secondLine}</div>`;
       }
-      return `<div>${name}</div>`;
+      return `<div>${name || ''}</div>`;
     }
+    const formatQuestionLines = formatGodnameLines;
 
     function formatSignLines(sign) {
-      const parts = sign.trim().split(/\s+/);
+      const parts = (sign || '').trim().split(/\s+/);
       if (parts.length >= 2) {
         return parts.map(p => `<div>${p}</div>`).join('');
       }
-      return `<div>${sign}</div>`;
+      return `<div>${sign || ''}</div>`;
     }
+    const formatAnswerLines = formatSignLines;
 
     // 5. RENDERING BOARD & INTERACTION ENGINE
     function updateUnplacedBadge() {
@@ -1535,7 +1880,7 @@
 
           const signLabel = document.createElement('div');
           signLabel.className = 'sign-label text-2xl sm:text-3xl lg:text-[36px] select-none flex-1 text-left pl-1 cursor-pointer';
-          signLabel.innerHTML = formatSignLines(slot.sign);
+          signLabel.innerHTML = formatAnswerLines(slot.answer || slot.sign);
 
           signLabel.addEventListener('click', () => {
             if (isEvaluating || gameState.submitted || slot.evalStatus === 'correct' || !selectedCardId) return;
@@ -1594,7 +1939,7 @@
       div.dataset.cardId = card.id;
       div.draggable = (!gameState.submitted && !isEvaluating && !isCorrect);
 
-      div.innerHTML = formatGodnameLines(card.godname);
+      div.innerHTML = formatQuestionLines(card.question || card.godname);
 
       if (isSnap) {
         div.addEventListener('animationend', () => {
@@ -1695,7 +2040,7 @@
           if (ghost) {
             ghost.style.display = 'flex';
             ghost.style.backgroundColor = card.color;
-            ghost.innerHTML = formatGodnameLines(card.godname);
+            ghost.innerHTML = formatQuestionLines(card.question || card.godname);
           }
         }
 
@@ -1754,7 +2099,7 @@
       selectedCardId = null;
 
       // 1. Correct Match
-      if (card.correctSign === targetSlot.sign) {
+      if ((card.correctAnswer || card.correctSign) === (targetSlot.answer || targetSlot.sign)) {
         targetSlot.placedCardId = card.id;
         targetSlot.evalStatus = 'correct';
         lastPlacedCardId = card.id;
@@ -1909,7 +2254,7 @@
         }
 
         const placedCard = gameState.cards.find(c => c.id === slot.placedCardId);
-        if (placedCard && placedCard.correctSign === slot.sign) {
+        if (placedCard && ((placedCard.correctAnswer || placedCard.correctSign) === (slot.answer || slot.sign))) {
           slot.evalStatus = 'correct';
           correctCount++;
           gameState.score = correctCount;
@@ -1948,7 +2293,7 @@
 
       gameState.poolCardIds = [];
       gameState.slots.forEach(slot => {
-        const matchingCard = gameState.cards.find(c => c.correctSign === slot.sign);
+        const matchingCard = gameState.cards.find(c => (c.correctAnswer || c.correctSign) === (slot.answer || slot.sign));
         if (matchingCard) {
           slot.placedCardId = matchingCard.id;
           slot.evalStatus = 'correct';
@@ -1985,7 +2330,7 @@
       }
     }
 
-    function updateLifelinesUI() {
+    function updateLivesUI() {
       const container = document.getElementById('lifelines-container');
       if (!container) return;
       const lives = Math.max(0, (gameState && typeof gameState.lives === 'number') ? gameState.lives : 3);
@@ -2005,7 +2350,7 @@
       if (typeof gameState.lives !== 'number') gameState.lives = 3;
       if (gameState.lives > 0) {
         gameState.lives--;
-        updateLifelinesUI();
+        updateLivesUI();
         playSound('wrong');
         if (gameState.lives <= 0) {
           triggerGameOver('lives');
@@ -2015,6 +2360,7 @@
 
     function triggerGameOver(reason = 'lives') {
       stopCountdownTimer();
+      stopBackgroundMusic();
       console.log('Game Over triggered. Reason:', reason);
       const modal = document.getElementById('gameover-modal');
       const reasonEl = document.getElementById('gameover-reason');
@@ -2022,7 +2368,7 @@
 
       let reasonText = '';
       if (reason === 'lives' || reason === 'wrong') {
-        reasonText = '3 गलत उत्तर (All 3 Lifelines Used)';
+        reasonText = '3 गलत उत्तर (All 3 Lives Lost)';
       } else if (reason === 'timeout') {
         reasonText = "समय समाप्त (Time's Up)";
       } else {
@@ -2038,11 +2384,12 @@
       if (modal) {
         modal.style.display = 'flex';
       }
-      playSound('wrong');
+      playGameOverSound();
     }
 
     function triggerVictory() {
       stopCountdownTimer();
+      stopBackgroundMusic();
       console.log('Victory triggered! Score: 20/20');
       const modal = document.getElementById('victory-modal');
       const scoreEl = document.getElementById('victory-score');
@@ -2058,6 +2405,8 @@
 
     function returnToStartScreen() {
       stopCountdownTimer();
+      stopBackgroundMusic();
+      bgMusicStep = 0;
       if (pageTransitionTimeout) {
         clearTimeout(pageTransitionTimeout);
         pageTransitionTimeout = null;
@@ -2159,12 +2508,14 @@
     }
 
     function startNewGame() {
+      timerRemaining = 30;
       startRandomGame();
     }
 
     function launchGame() {
       if (isLaunching) return;
       isLaunching = true;
+      bgMusicStep = 0;
       const startBtn = document.getElementById('start-game-btn');
       if (startBtn) {
         startBtn.disabled = true;
@@ -2195,6 +2546,7 @@
 
         gameState.screen = 'playing';
         startNewGame();
+        startBackgroundMusic();
         isLaunching = false;
         if (startBtn) {
           startBtn.disabled = false;
@@ -2349,16 +2701,16 @@
 
     function updateTimerDisplay() {
       const timerEl = document.getElementById('countdown-timer');
-      const mins = Math.floor(timerRemaining / 60);
-      const secs = timerRemaining % 60;
-      const formatted = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+      const formatted = `${timerRemaining}`;
 
       if (timerEl) {
         timerEl.textContent = formatted;
         if (timerRemaining <= 10) {
           timerEl.classList.add('text-red-500', 'animate-pulse');
+          timerEl.classList.remove('text-amber-300');
         } else {
           timerEl.classList.remove('text-red-500', 'animate-pulse');
+          timerEl.classList.add('text-amber-300');
         }
       }
 
@@ -2392,7 +2744,7 @@
       }, 1000);
     }
 
-    function resetCountdownTimer(seconds = 60) {
+    function resetCountdownTimer(seconds = 30) {
       stopCountdownTimer();
       timerRemaining = seconds;
       timerSeconds = seconds;
@@ -2404,7 +2756,7 @@
     }
 
     // Legacy timer bridge
-    function resetTimer() { resetCountdownTimer(60); }
+    function resetTimer() { resetCountdownTimer(30); }
     function startTimer() { startCountdownTimer(); }
     function updateTimerUI() { updateTimerDisplay(); }
 
@@ -2413,8 +2765,12 @@
       const pauseBtn = document.getElementById('pause-btn');
       if (isPaused) {
         pauseBtn.classList.add('bg-amber-600');
+        stopBackgroundMusic();
       } else {
         pauseBtn.classList.remove('bg-amber-600');
+        if (soundEnabled && gameState && gameState.screen === 'playing') {
+          startBackgroundMusic();
+        }
       }
     }
 
@@ -2428,6 +2784,12 @@
       const landingOff = document.getElementById('landing-sound-off-icon');
       if (landingOn) landingOn.classList.toggle('hidden', !soundEnabled);
       if (landingOff) landingOff.classList.toggle('hidden', soundEnabled);
+
+      if (!soundEnabled) {
+        stopBackgroundMusic();
+      } else if (gameState && gameState.screen === 'playing') {
+        startBackgroundMusic();
+      }
     }
 
     function toggleFullscreen() {
