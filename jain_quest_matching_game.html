@@ -478,91 +478,95 @@
   <!-- =========================================================================
        TOP HEADER BAR (Logos, Timer, Single-Page View, Score & Data Controls)
        ========================================================================= -->
-  <header class="relative z-20 w-full bg-white/85 backdrop-blur-md border-b border-amber-900/20 px-3 py-1.5 shadow-sm">
-    <div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-2">
+  <header class="relative z-20 w-full bg-white/90 backdrop-blur-md border-b border-amber-900/20 px-3 py-2 shadow-sm">
+    <div class="max-w-[1600px] mx-auto flex items-center justify-between gap-2 sm:gap-4">
 
-      <!-- Left: Live Timer + Game Logo + Org Logo -->
-      <div class="flex items-center gap-3">
-        <div class="bg-amber-950/90 text-amber-50 px-3 py-1 rounded-lg font-mono font-bold text-base sm:text-lg shadow-inner flex items-center gap-1.5" title="Game Timer">
-          <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <!-- Left: Jain Kosh Brand Logo + Subtitle -->
+      <div class="flex items-center gap-2.5 flex-shrink-0">
+        <div class="relative w-9 h-9 sm:w-11 sm:h-11 rounded-full overflow-hidden border-2 border-orange-500 shadow bg-orange-400 flex-shrink-0" title="जैन कोष (Jain Kosh)">
+          <img id="org-logo-img" src="jainkosh-logo.jpeg" alt="Jain Kosh Logo" class="w-full h-full object-cover"
+               onerror="this.style.display='none'; document.getElementById('org-logo-fallback').style.display='flex';" />
+          <div id="org-logo-fallback" style="display:none;" class="w-full h-full items-center justify-center bg-gradient-to-tr from-orange-500 via-amber-400 to-yellow-300">
+            <svg viewBox="0 0 64 64" class="w-full h-full p-1">
+              <circle cx="32" cy="32" r="29" fill="#facc15" stroke="#ef4444" stroke-width="3"/>
+              <rect x="16" y="20" width="15" height="24" rx="2" fill="#f97316"/>
+              <rect x="33" y="20" width="15" height="24" rx="2" fill="#f97316"/>
+              <text x="32" y="35" font-size="9" text-anchor="middle" fill="#fff" font-weight="bold">जैन कोष</text>
+            </svg>
+          </div>
+        </div>
+        <div class="hidden sm:block leading-tight">
+          <div class="font-bold text-amber-950 text-sm">जैन कोष</div>
+          <div class="text-[10px] text-amber-800 font-medium">Jain Kosh</div>
+        </div>
+      </div>
+
+      <!-- Center: Jain Quest Game Logo & Title -->
+      <div class="flex items-center gap-2 bg-amber-50/90 border border-amber-300/80 rounded-full px-3 py-1 shadow-sm flex-shrink-0">
+        <div class="relative w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden border-2 border-amber-600 shadow bg-amber-100 flex-shrink-0" title="Jain Quest">
+          <img id="game-logo-img" src="game-logo.jpeg" alt="Jain Quest Logo" class="w-full h-full object-cover"
+               onerror="this.style.display='none'; document.getElementById('game-logo-fallback').style.display='flex';" />
+          <div id="game-logo-fallback" style="display:none;" class="w-full h-full items-center justify-center bg-gradient-to-br from-amber-500 via-yellow-600 to-amber-800 text-white">
+            <svg viewBox="0 0 64 64" class="w-full h-full p-1">
+              <circle cx="32" cy="32" r="29" fill="none" stroke="#fde68a" stroke-width="3"/>
+              <circle cx="32" cy="22" r="6" fill="#fef3c7"/>
+              <path d="M20,44 C20,33 44,33 44,44 Z" fill="#fde68a"/>
+              <text x="32" y="56" font-size="8" text-anchor="middle" fill="#fff" font-weight="bold">JAIN QUEST</text>
+            </svg>
+          </div>
+        </div>
+        <div class="leading-tight text-center sm:text-left">
+          <div class="font-cinzel font-extrabold text-amber-950 text-sm sm:text-base tracking-wide">JAIN QUEST</div>
+          <div class="text-[10px] sm:text-[11px] text-amber-800 font-medium hidden md:block">तीर्थंकर एवं चिह्न मिलान</div>
+        </div>
+      </div>
+
+      <!-- Right: Page Indicator, Score, Lifelines, Countdown Timer, Sound & Fullscreen -->
+      <div class="flex items-center gap-1.5 sm:gap-2.5 flex-wrap justify-end">
+        <!-- Page Indicator -->
+        <div id="page-indicator" class="bg-amber-100/90 border border-amber-400 text-amber-950 font-bold px-2 sm:px-2.5 py-1 rounded-lg text-xs sm:text-sm shadow-sm whitespace-nowrap" title="Current Page">
+          Page 1 of 2
+        </div>
+
+        <!-- Score Display -->
+        <div class="flex items-center gap-1 bg-emerald-50 border border-emerald-400 text-emerald-900 px-2 sm:px-2.5 py-1 rounded-lg font-extrabold text-xs sm:text-sm shadow-sm" title="Total Score">
+          <span class="text-emerald-600">✓</span>
+          <span id="score-display">0 / 20</span>
+        </div>
+
+        <!-- 3 Lifelines -->
+        <div id="lifelines-container" class="flex items-center gap-0.5 bg-rose-50 border border-rose-300 px-2 py-1 rounded-lg text-sm sm:text-base shadow-sm select-none" title="3 Lifelines">
+          <span class="heart-icon transition-transform inline-block">❤️</span>
+          <span class="heart-icon transition-transform inline-block">❤️</span>
+          <span class="heart-icon transition-transform inline-block">❤️</span>
+        </div>
+
+        <!-- 1-Minute Countdown Timer -->
+        <div class="bg-amber-950 text-amber-50 px-2 sm:px-2.5 py-1 rounded-lg font-mono font-bold text-xs sm:text-sm shadow-inner flex items-center gap-1.5" title="Countdown Timer (1 Minute)">
+          <svg class="w-3.5 h-3.5 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10" stroke-width="2"></circle>
             <path stroke-linecap="round" stroke-width="2" d="M12 6v6l4 2"></path>
           </svg>
-          <span id="timer-display">0:00</span>
+          <span id="countdown-timer">1:00</span>
+          <span id="timer-display" class="hidden">1:00</span>
         </div>
 
-        <!-- Brand Logos Container -->
-        <div class="flex items-center gap-2.5 bg-amber-50/90 border border-amber-300/80 rounded-full px-2.5 py-1 shadow-sm">
-          <!-- Game Logo -->
-          <div class="relative w-9 h-9 sm:w-11 sm:h-11 rounded-full overflow-hidden border-2 border-amber-600 shadow bg-amber-100 flex-shrink-0" title="Jain Quest">
-            <img id="game-logo-img" src="game-logo.jpeg" alt="Jain Quest Logo" class="w-full h-full object-cover"
-                 onerror="this.style.display='none'; document.getElementById('game-logo-fallback').style.display='flex';" />
-            <div id="game-logo-fallback" style="display:none;" class="w-full h-full items-center justify-center bg-gradient-to-br from-amber-500 via-yellow-600 to-amber-800 text-white">
-              <svg viewBox="0 0 64 64" class="w-full h-full p-1">
-                <circle cx="32" cy="32" r="29" fill="none" stroke="#fde68a" stroke-width="3"/>
-                <circle cx="32" cy="22" r="6" fill="#fef3c7"/>
-                <path d="M20,44 C20,33 44,33 44,44 Z" fill="#fde68a"/>
-                <text x="32" y="56" font-size="8" text-anchor="middle" fill="#fff" font-weight="bold">JAIN QUEST</text>
-              </svg>
-            </div>
-          </div>
-
-          <div class="leading-tight hidden sm:block">
-            <div class="font-cinzel font-extrabold text-amber-950 text-sm md:text-base tracking-wide flex items-center gap-1.5">
-              <span>JAIN QUEST</span>
-              <span class="text-xs bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded font-sans font-bold">जैन कोष</span>
-            </div>
-            <div class="text-[11px] text-amber-800 font-medium">तीर्थंकर एवं चिह्न मिलान (Tirthankara Sign Match)</div>
-          </div>
-
-          <!-- Org Logo -->
-          <div class="relative w-9 h-9 sm:w-11 sm:h-11 rounded-full overflow-hidden border-2 border-orange-500 shadow bg-orange-400 flex-shrink-0" title="जैन कोष (Jain Kosh)">
-            <img id="org-logo-img" src="jainkosh-logo.jpeg" alt="Jain Kosh Logo" class="w-full h-full object-cover"
-                 onerror="this.style.display='none'; document.getElementById('org-logo-fallback').style.display='flex';" />
-            <div id="org-logo-fallback" style="display:none;" class="w-full h-full items-center justify-center bg-gradient-to-tr from-orange-500 via-amber-400 to-yellow-300">
-              <svg viewBox="0 0 64 64" class="w-full h-full p-1">
-                <circle cx="32" cy="32" r="29" fill="#facc15" stroke="#ef4444" stroke-width="3"/>
-                <rect x="16" y="20" width="15" height="24" rx="2" fill="#f97316"/>
-                <rect x="33" y="20" width="15" height="24" rx="2" fill="#f97316"/>
-                <text x="32" y="35" font-size="9" text-anchor="middle" fill="#fff" font-weight="bold">जैन कोष</text>
-              </svg>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Center: Active Dataset Badge Pill -->
-      <div id="active-dataset-pill" class="hidden md:flex items-center gap-1.5 bg-amber-950/85 text-amber-200 px-3 py-1 rounded-full border border-amber-400/60 shadow-sm text-xs font-semibold">
-        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span id="active-dataset-name">Video Set 1</span>
-      </div>
-
-      <!-- Right: New Game + Dataset Mode + JSON Manager + Score Display -->
-      <div class="flex items-center gap-2">
-        <button id="new-game-btn" onclick="startRandomGame()" class="text-xs sm:text-sm bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-bold py-1.5 px-3 rounded-lg shadow flex items-center gap-1.5 transition" title="Start a fresh game with a random 10-Tirthankara set">
-          <span>🎲 New Game</span>
-          <span class="hidden sm:inline text-amber-200 text-[11px]">(Random Set)</span>
-        </button>
-
-        <select id="dataset-select" onchange="switchDatasetMode(this.value)" class="text-xs sm:text-sm bg-amber-100 hover:bg-amber-200 text-amber-950 font-bold py-1.5 px-2.5 rounded-lg border border-amber-400 cursor-pointer focus:outline-none">
-          <option value="random">🎲 Random Set</option>
-          <option value="video_set1">Video Set 1 (10 भगवान)</option>
-          <option value="video_set2">Video Set 2 (10 भगवान)</option>
-          <option value="authentic_10">Authentic Signs (10 भगवान)</option>
-          <option value="json10_exact">Attached jain-quest.json (Exact)</option>
-        </select>
-
-        <button onclick="openDataModal()" class="text-xs sm:text-sm bg-stone-800 hover:bg-stone-700 text-white font-semibold py-1.5 px-3 rounded-lg shadow flex items-center gap-1.5 transition" title="Upload Custom JSON, Multi-JSON Sets, or Logos">
-          <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+        <!-- Sound Toggle -->
+        <button id="sound-btn" onclick="toggleSound()" class="w-8 h-8 rounded-lg bg-stone-900/80 hover:bg-stone-900 text-white flex items-center justify-center shadow transition flex-shrink-0" title="Toggle Sound">
+          <svg id="sound-on-icon" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
           </svg>
-          <span class="hidden md:inline">JSON Manager</span>
+          <svg id="sound-off-icon" class="w-4 h-4 hidden text-red-400" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+          </svg>
         </button>
 
-        <div class="flex items-center gap-1 bg-emerald-50 border border-emerald-400 text-emerald-900 px-3 py-1 rounded-lg font-extrabold text-base sm:text-lg shadow-sm" title="Total Correct Answers">
-          <span class="text-emerald-600">✓</span>
-          <span id="score-display">0</span>
-        </div>
+        <!-- Fullscreen Toggle -->
+        <button onclick="toggleFullscreen()" class="w-8 h-8 rounded-lg bg-stone-900/80 hover:bg-stone-900 text-white flex items-center justify-center shadow transition flex-shrink-0" title="Toggle Fullscreen">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+          </svg>
+        </button>
       </div>
 
     </div>
@@ -638,34 +642,15 @@
       </button>
     </div>
 
-    <!-- Bottom Center: Submit Answers + Show Correct -->
+    <!-- Bottom Center: Show Correct Answers (Hidden / Debug) -->
     <div class="flex items-center gap-3">
-      <button id="submit-btn" onclick="submitAnswers()" class="submit-btn px-6 sm:px-8 py-2 text-sm sm:text-base tracking-wide shadow-md">
-        Submit Answers
-      </button>
-
       <button id="show-answers-btn" onclick="fillCorrectAnswers()" class="hidden px-4 py-2 rounded-md bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs sm:text-sm shadow transition">
         Show Correct Answers
       </button>
     </div>
 
-    <!-- Bottom Right: Sound & Fullscreen -->
-    <div class="flex items-center gap-2">
-      <button id="sound-btn" onclick="toggleSound()" class="w-9 h-9 rounded-lg bg-stone-900/80 hover:bg-stone-900 text-white flex items-center justify-center shadow transition" title="Toggle Sound Effects">
-        <svg id="sound-on-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
-        </svg>
-        <svg id="sound-off-icon" class="w-5 h-5 hidden text-red-400" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
-        </svg>
-      </button>
-
-      <button onclick="toggleFullscreen()" class="w-9 h-9 rounded-lg bg-stone-900/80 hover:bg-stone-900 text-white flex items-center justify-center shadow transition" title="Toggle Fullscreen">
-        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
-        </svg>
-      </button>
-    </div>
+    <!-- Bottom Right Spacer -->
+    <div></div>
 
   </footer>
   </div> <!-- end #game-playfield -->
@@ -1036,17 +1021,20 @@
       slots: [],
       submitted: false,
       score: 0,
+      lives: 3,
       activeSet: null,
       currentPage: 1
     };
 
     let selectedCardId = null;
     let lastPlacedCardId = null;
-    let timerSeconds = 0;
+    let timerRemaining = 60;
+    let timerSeconds = 60;
     let timerInterval = null;
     let isPaused = false;
     let soundEnabled = true;
     let isEvaluating = false;
+    let isLaunching = false;
 
     // 3. WEB AUDIO SYNTHESIZER
     let audioCtx = null;
@@ -1283,14 +1271,18 @@
         poolCardIds: shuffleArray(cards.map(c => c.id)),
         slots,
         submitted: false,
-        score: 0,
+        score: (gameState && typeof gameState.score === 'number') ? gameState.score : 0,
+        lives: (gameState && typeof gameState.lives === 'number') ? gameState.lives : 3,
         activeSet: (gameState && gameState.activeSet) ? gameState.activeSet : null,
-        currentPage: (gameState && gameState.currentPage) ? gameState.currentPage : 1
+        currentPage: (gameState && gameState.currentPage) ? gameState.currentPage : 1,
+        screen: (gameState && gameState.screen) ? gameState.screen : 'playing'
       };
 
       selectedCardId = null;
       lastPlacedCardId = null;
       updateScoreDisplay();
+      updatePageIndicator();
+      updateLifelinesUI();
       updateUnplacedBadge();
     }
 
@@ -1802,7 +1794,8 @@
     function updateScoreDisplay() {
       const scoreEl = document.getElementById('score-display');
       if (scoreEl) {
-        scoreEl.textContent = (gameState && gameState.score !== undefined) ? gameState.score : 0;
+        const val = (gameState && typeof gameState.score === 'number') ? gameState.score : 0;
+        scoreEl.textContent = `${val} / 20`;
         const container = scoreEl.parentElement;
         if (container) {
           container.classList.remove('scale-110');
@@ -1810,6 +1803,51 @@
           container.classList.add('scale-110', 'transition-transform', 'duration-150');
           setTimeout(() => container.classList.remove('scale-110'), 150);
         }
+      }
+    }
+
+    function updatePageIndicator() {
+      const pageEl = document.getElementById('page-indicator');
+      if (pageEl) {
+        const page = (gameState && gameState.currentPage) ? gameState.currentPage : 1;
+        pageEl.textContent = `Page ${page} of 2`;
+      }
+    }
+
+    function updateLifelinesUI() {
+      const container = document.getElementById('lifelines-container');
+      if (!container) return;
+      const lives = Math.max(0, (gameState && typeof gameState.lives === 'number') ? gameState.lives : 3);
+      let html = '';
+      for (let i = 1; i <= 3; i++) {
+        if (i <= lives) {
+          html += '<span class="heart-active transition-transform inline-block transform hover:scale-110" title="Active Life">❤️</span>';
+        } else {
+          html += '<span class="heart-lost transition-opacity inline-block opacity-35 grayscale" title="Lost Life">🖤</span>';
+        }
+      }
+      container.innerHTML = html;
+    }
+
+    function deductLife() {
+      if (!gameState) return;
+      if (typeof gameState.lives !== 'number') gameState.lives = 3;
+      if (gameState.lives > 0) {
+        gameState.lives--;
+        updateLifelinesUI();
+        playSound('wrong');
+        if (gameState.lives <= 0) {
+          triggerGameOver('lives');
+        }
+      }
+    }
+
+    function triggerGameOver(reason = 'lives') {
+      stopCountdownTimer();
+      console.log('Game Over triggered. Reason:', reason);
+      const modal = document.getElementById('gameover-modal');
+      if (modal) {
+        modal.style.display = 'flex';
       }
     }
 
@@ -1826,9 +1864,13 @@
           if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
       }
+      gameState.lives = 3;
+      gameState.score = 0;
       initGameBoard(activeDataset);
       renderBoard();
-      resetTimer();
+      updatePageIndicator();
+      updateLifelinesUI();
+      resetCountdownTimer(60);
     }
 
     function startRandomGame() {
@@ -1843,16 +1885,31 @@
           if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
       }
-      const randomDs = pickRandomDataset();
-      if (randomDs && Array.isArray(randomDs.items)) {
-        activeDataset = [...randomDs.items];
-        activeDatasetName = randomDs.name;
-        activeDatasetId = randomDs.id;
+      if (typeof GAME_SETS_20 !== 'undefined' && typeof pickRandomGameSet20 === 'function') {
+        const randomSet = pickRandomGameSet20((gameState && gameState.activeSet) ? gameState.activeSet.id : null);
+        if (randomSet) {
+          gameState.activeSet = randomSet;
+          gameState.currentPage = 1;
+          gameState.score = 0;
+          gameState.lives = 3;
+          activeDataset = [...randomSet.page1];
+          activeDatasetName = `${randomSet.name} (Page 1)`;
+          activeDatasetId = randomSet.id;
+        }
+      } else {
+        const randomDs = pickRandomDataset();
+        if (randomDs && Array.isArray(randomDs.items)) {
+          activeDataset = [...randomDs.items];
+          activeDatasetName = randomDs.name;
+          activeDatasetId = randomDs.id;
+        }
       }
       updateActiveDatasetUI();
       initGameBoard(activeDataset);
       renderBoard();
-      resetTimer();
+      updatePageIndicator();
+      updateLifelinesUI();
+      resetCountdownTimer(60);
     }
 
     function startNewGame() {
@@ -1860,6 +1917,14 @@
     }
 
     function launchGame() {
+      if (isLaunching) return;
+      isLaunching = true;
+      const startBtn = document.getElementById('start-game-btn');
+      if (startBtn) {
+        startBtn.disabled = true;
+        startBtn.classList.add('opacity-75', 'cursor-not-allowed');
+      }
+
       // 1. Resumes / unlocks AudioContext
       const ctx = getAudioCtx();
       if (ctx && ctx.state === 'suspended') {
@@ -1884,13 +1949,21 @@
 
         gameState.screen = 'playing';
         startNewGame();
+        isLaunching = false;
+        if (startBtn) {
+          startBtn.disabled = false;
+          startBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+        }
       }, 420);
     }
 
     function showLandingScreen() {
-      if (timerInterval) {
-        clearInterval(timerInterval);
-        timerInterval = null;
+      stopCountdownTimer();
+      isLaunching = false;
+      const startBtn = document.getElementById('start-game-btn');
+      if (startBtn) {
+        startBtn.disabled = false;
+        startBtn.classList.remove('opacity-75', 'cursor-not-allowed');
       }
       const landingScreen = document.getElementById('landing-screen');
       const gamePlayfield = document.getElementById('game-playfield');
@@ -2028,34 +2101,66 @@
       resetBoard();
     }
 
-    function resetTimer() {
-      if (timerInterval) clearInterval(timerInterval);
-      timerSeconds = 0;
-      isPaused = false;
-      const pauseBtn = document.getElementById('pause-btn');
-      if (pauseBtn) pauseBtn.classList.remove('bg-amber-600');
-      updateTimerUI();
-      startTimer();
+    function updateTimerDisplay() {
+      const timerEl = document.getElementById('countdown-timer');
+      const mins = Math.floor(timerRemaining / 60);
+      const secs = timerRemaining % 60;
+      const formatted = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+
+      if (timerEl) {
+        timerEl.textContent = formatted;
+        if (timerRemaining <= 10) {
+          timerEl.classList.add('text-red-500', 'animate-pulse');
+        } else {
+          timerEl.classList.remove('text-red-500', 'animate-pulse');
+        }
+      }
+
+      const legacyTimerEl = document.getElementById('timer-display');
+      if (legacyTimerEl) {
+        legacyTimerEl.textContent = formatted;
+      }
     }
 
-    function startTimer() {
-      if (timerInterval) clearInterval(timerInterval);
+    function stopCountdownTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    function startCountdownTimer() {
+      stopCountdownTimer();
       timerInterval = setInterval(() => {
-        if (!isPaused && (!gameState || !gameState.submitted)) {
-          timerSeconds++;
-          updateTimerUI();
+        if (!isPaused && gameState && gameState.screen === 'playing' && !gameState.submitted) {
+          if (timerRemaining > 0) {
+            timerRemaining--;
+            timerSeconds = timerRemaining;
+            updateTimerDisplay();
+            if (timerRemaining <= 0) {
+              stopCountdownTimer();
+              triggerGameOver('timeout');
+            }
+          }
         }
       }, 1000);
     }
 
-    function updateTimerUI() {
-      const mins = Math.floor(timerSeconds / 60);
-      const secs = timerSeconds % 60;
-      const timerEl = document.getElementById('timer-display');
-      if (timerEl) {
-        timerEl.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-      }
+    function resetCountdownTimer(seconds = 60) {
+      stopCountdownTimer();
+      timerRemaining = seconds;
+      timerSeconds = seconds;
+      isPaused = false;
+      const pauseBtn = document.getElementById('pause-btn');
+      if (pauseBtn) pauseBtn.classList.remove('bg-amber-600');
+      updateTimerDisplay();
+      startCountdownTimer();
     }
+
+    // Legacy timer bridge
+    function resetTimer() { resetCountdownTimer(60); }
+    function startTimer() { startCountdownTimer(); }
+    function updateTimerUI() { updateTimerDisplay(); }
 
     function togglePause() {
       isPaused = !isPaused;
