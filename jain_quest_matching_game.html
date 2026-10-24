@@ -1412,6 +1412,164 @@
       }
     }
 
+    // 3.1 CONTINUOUS AMBIENT BACKGROUND MUSIC & DRAMATIC GAME OVER SYNTHESIZER
+    let bgMusicInterval = null;
+    let bgMusicGain = null;
+    let bgMusicStep = 0;
+
+    function startBackgroundMusic() {
+      if (!soundEnabled) return;
+      if (gameState && gameState.screen && gameState.screen !== 'playing') return;
+      if (bgMusicInterval) return;
+
+      try {
+        const ctx = getAudioCtx();
+        if (!ctx) return;
+        if (ctx.state === 'suspended') ctx.resume();
+
+        bgMusicGain = ctx.createGain();
+        bgMusicGain.gain.setValueAtTime(0.05, ctx.currentTime);
+        bgMusicGain.connect(ctx.destination);
+
+        let filter = null;
+        try {
+          if (typeof ctx.createBiquadFilter === 'function') {
+            filter = ctx.createBiquadFilter();
+            filter.type = 'lowpass';
+            if (filter.frequency && typeof filter.frequency.setValueAtTime === 'function') {
+              filter.frequency.setValueAtTime(850, ctx.currentTime);
+            }
+            filter.connect(bgMusicGain);
+          }
+        } catch (e) {}
+
+        const outputNode = filter || bgMusicGain;
+        // Soothing meditative ambient pentatonic loop (C4, G4, A4, C5 and gentle harmonics)
+        const notes = [
+          261.63, 392.00, 440.00, 523.25, // C4, G4, A4, C5
+          440.00, 392.00, 329.63, 261.63, // A4, G4, E4, C4
+          349.23, 392.00, 440.00, 523.25, // F4, G4, A4, C5
+          392.00, 329.63, 293.66, 261.63  // G4, E4, D4, C4
+        ];
+
+        function playNextAmbientNote() {
+          if (!soundEnabled || (gameState && gameState.screen && gameState.screen !== 'playing') || isPaused) {
+            stopBackgroundMusic();
+            return;
+          }
+          try {
+            const now = ctx.currentTime;
+            const osc = ctx.createOscillator();
+            const noteGain = ctx.createGain();
+            osc.type = 'triangle';
+            const freq = notes[bgMusicStep % notes.length];
+            bgMusicStep++;
+
+            osc.frequency.setValueAtTime(freq, now);
+            noteGain.gain.setValueAtTime(0.001, now);
+            if (typeof noteGain.gain.linearRampToValueAtTime === 'function') {
+              noteGain.gain.linearRampToValueAtTime(0.05, now + 0.08);
+            }
+            if (typeof noteGain.gain.exponentialRampToValueAtTime === 'function') {
+              noteGain.gain.exponentialRampToValueAtTime(0.001, now + 1.1);
+            }
+            osc.connect(noteGain);
+            noteGain.connect(outputNode);
+            osc.start(now);
+            osc.stop(now + 1.15);
+          } catch (e) {}
+        }
+
+        playNextAmbientNote();
+        bgMusicInterval = setInterval(playNextAmbientNote, 650);
+      } catch (e) {
+        console.warn('Background music error:', e);
+      }
+    }
+
+    function stopBackgroundMusic() {
+      if (bgMusicInterval) {
+        clearInterval(bgMusicInterval);
+        bgMusicInterval = null;
+      }
+      if (bgMusicGain) {
+        try {
+          const ctx = getAudioCtx();
+          if (ctx) {
+            const now = ctx.currentTime;
+            if (typeof bgMusicGain.gain.setValueAtTime === 'function') {
+              bgMusicGain.gain.setValueAtTime(bgMusicGain.gain.value || 0.05, now);
+            }
+            if (typeof bgMusicGain.gain.linearRampToValueAtTime === 'function') {
+              bgMusicGain.gain.linearRampToValueAtTime(0.0001, now + 0.25);
+            }
+            setTimeout(() => {
+              try {
+                if (bgMusicGain) {
+                  bgMusicGain.disconnect();
+                  bgMusicGain = null;
+                }
+              } catch (e) {}
+            }, 280);
+          } else {
+            bgMusicGain = null;
+          }
+        } catch (e) {
+          bgMusicGain = null;
+        }
+      }
+    }
+
+    function playGameOverSound() {
+      if (!soundEnabled) return;
+      try {
+        const ctx = getAudioCtx();
+        if (!ctx) return;
+        if (ctx.state === 'suspended') ctx.resume();
+        const now = ctx.currentTime;
+
+        // Descending minor chord sequence: Eb4 -> C4 -> Ab3 -> F3
+        const minorNotes = [311.13, 261.63, 207.65, 174.61]; // Eb4, C4, Ab3, F3
+        minorNotes.forEach((freq, idx) => {
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sawtooth';
+          const start = now + idx * 0.18;
+          const dur = 0.55;
+          osc.frequency.setValueAtTime(freq, start);
+          gain.gain.setValueAtTime(0.24, start);
+          if (typeof gain.gain.exponentialRampToValueAtTime === 'function') {
+            gain.gain.exponentialRampToValueAtTime(0.001, start + dur);
+          }
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(start);
+          osc.stop(start + dur + 0.05);
+        });
+
+        // Deep resonant bass gong decay
+        const bassOsc = ctx.createOscillator();
+        const bassGain = ctx.createGain();
+        bassOsc.type = 'sawtooth';
+        const bassStart = now + 0.35;
+        const bassDur = 1.6;
+        bassOsc.frequency.setValueAtTime(87.31, bassStart); // F2
+        if (typeof bassOsc.frequency.exponentialRampToValueAtTime === 'function') {
+          bassOsc.frequency.exponentialRampToValueAtTime(43.65, bassStart + bassDur); // descent to F1
+        }
+        bassGain.gain.setValueAtTime(0.32, bassStart);
+        if (typeof bassGain.gain.exponentialRampToValueAtTime === 'function') {
+          bassGain.gain.exponentialRampToValueAtTime(0.001, bassStart + bassDur);
+        }
+        bassOsc.connect(bassGain);
+        bassGain.connect(ctx.destination);
+        bassOsc.start(bassStart);
+        bassOsc.stop(bassStart + bassDur + 0.05);
+      } catch (e) {
+        console.warn('Game over sound error:', e);
+      }
+    }
+
     // 3.5 CANVAS CONFETTI ENGINE (Zero-Dependency)
     let confettiAnimationId = null;
     let confettiParticles = [];
@@ -1574,6 +1732,9 @@
       updatePageIndicator();
       timerRemaining = 30;
       resetCountdownTimer(30);
+      if (soundEnabled && gameState && gameState.screen === 'playing') {
+        startBackgroundMusic();
+      }
     }
 
     function formatGodnameLines(name) {
@@ -2213,6 +2374,7 @@
 
     function triggerGameOver(reason = 'lives') {
       stopCountdownTimer();
+      stopBackgroundMusic();
       console.log('Game Over triggered. Reason:', reason);
       const modal = document.getElementById('gameover-modal');
       const reasonEl = document.getElementById('gameover-reason');
@@ -2236,11 +2398,12 @@
       if (modal) {
         modal.style.display = 'flex';
       }
-      playSound('wrong');
+      playGameOverSound();
     }
 
     function triggerVictory() {
       stopCountdownTimer();
+      stopBackgroundMusic();
       console.log('Victory triggered! Score: 20/20');
       const modal = document.getElementById('victory-modal');
       const scoreEl = document.getElementById('victory-score');
@@ -2256,6 +2419,7 @@
 
     function returnToStartScreen() {
       stopCountdownTimer();
+      stopBackgroundMusic();
       if (pageTransitionTimeout) {
         clearTimeout(pageTransitionTimeout);
         pageTransitionTimeout = null;
@@ -2394,6 +2558,7 @@
 
         gameState.screen = 'playing';
         startNewGame();
+        startBackgroundMusic();
         isLaunching = false;
         if (startBtn) {
           startBtn.disabled = false;
@@ -2612,8 +2777,12 @@
       const pauseBtn = document.getElementById('pause-btn');
       if (isPaused) {
         pauseBtn.classList.add('bg-amber-600');
+        stopBackgroundMusic();
       } else {
         pauseBtn.classList.remove('bg-amber-600');
+        if (soundEnabled && gameState && gameState.screen === 'playing') {
+          startBackgroundMusic();
+        }
       }
     }
 
@@ -2627,6 +2796,12 @@
       const landingOff = document.getElementById('landing-sound-off-icon');
       if (landingOn) landingOn.classList.toggle('hidden', !soundEnabled);
       if (landingOff) landingOff.classList.toggle('hidden', soundEnabled);
+
+      if (!soundEnabled) {
+        stopBackgroundMusic();
+      } else if (gameState && gameState.screen === 'playing') {
+        startBackgroundMusic();
+      }
     }
 
     function toggleFullscreen() {
