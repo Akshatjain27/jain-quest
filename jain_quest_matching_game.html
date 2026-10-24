@@ -581,7 +581,7 @@
     <div id="helper-banner" class="mb-2 flex items-center justify-between bg-amber-950/75 text-amber-50 text-xs sm:text-sm px-3 py-1.5 rounded-lg backdrop-blur-sm">
       <div class="flex items-center gap-2">
         <span class="bg-amber-400 text-amber-950 font-extrabold px-2 py-0.5 rounded text-xs">HOW TO PLAY</span>
-        <span>बाईं ओर से <strong>तीर्थंकर भगवान</strong> का कार्ड खींचकर (Drag) या क्लिक करके सही <strong>चिह्न (Sign)</strong> के खाली बॉक्स में रखें, फिर <strong>Submit Answers</strong> दबाएँ।</span>
+        <span>बाईं ओर (या नीचे ट्रे) से <strong>तीर्थंकर भगवान</strong> का कार्ड खींचकर या क्लिक करके सही <strong>चिह्न (Sign)</strong> के बॉक्स में रखें — उत्तर तुरंत जाँचा जाएगा!</span>
       </div>
       <button onclick="resetBoard()" class="text-amber-300 hover:text-white font-bold underline ml-2 whitespace-nowrap">Reset Board</button>
     </div>
@@ -1410,17 +1410,17 @@
           }
 
           dropBox.addEventListener('click', (ev) => {
-            if (isEvaluating || gameState.submitted) return;
+            if (isEvaluating || gameState.submitted || slot.evalStatus === 'correct') return;
             if (selectedCardId && !slot.placedCardId) {
               ev.stopPropagation();
               const cardToPlace = selectedCardId;
               selectedCardId = null;
-              placeCardInSlot(cardToPlace, sIdx);
+              handleSlotAssignment(cardToPlace, sIdx);
             }
           });
 
           dropBox.addEventListener('dragover', (e) => {
-            if (isEvaluating || gameState.submitted) return;
+            if (isEvaluating || gameState.submitted || slot.evalStatus === 'correct') return;
             e.preventDefault();
             e.dataTransfer.dropEffect = 'move';
             dropBox.classList.add('drag-over');
@@ -1429,13 +1429,13 @@
             dropBox.classList.remove('drag-over');
           });
           dropBox.addEventListener('drop', (e) => {
-            if (isEvaluating || gameState.submitted) return;
+            if (isEvaluating || gameState.submitted || slot.evalStatus === 'correct') return;
             e.preventDefault();
             dropBox.classList.remove('drag-over');
             const draggedCardId = e.dataTransfer.getData('text/plain') || selectedCardId;
             if (draggedCardId) {
               selectedCardId = null;
-              placeCardInSlot(draggedCardId, sIdx);
+              handleSlotAssignment(draggedCardId, sIdx);
             }
           });
 
@@ -1444,10 +1444,10 @@
           signLabel.innerHTML = formatSignLines(slot.sign);
 
           signLabel.addEventListener('click', () => {
-            if (isEvaluating || gameState.submitted || !selectedCardId) return;
+            if (isEvaluating || gameState.submitted || slot.evalStatus === 'correct' || !selectedCardId) return;
             const cardToPlace = selectedCardId;
             selectedCardId = null;
-            placeCardInSlot(cardToPlace, sIdx);
+            handleSlotAssignment(cardToPlace, sIdx);
           });
 
           rowWrapper.appendChild(dropBox);
@@ -1485,6 +1485,7 @@
     function createCardElement(card, location, slotObj) {
       const div = document.createElement('div');
       const isSelected = (selectedCardId === card.id);
+      const isCorrect = (slotObj && slotObj.evalStatus === 'correct');
       const isWrong = (slotObj && slotObj.evalStatus === 'wrong');
       const isSnap = (lastPlacedCardId === card.id);
 
@@ -1493,10 +1494,11 @@
         sizeClasses = 'min-w-[120px] sm:min-w-[140px] h-[58px] sm:h-[68px] text-base sm:text-lg flex-shrink-0';
       }
 
-      div.className = `game-card ${sizeClasses} cursor-pointer select-none ${isSelected ? 'selected-card' : ''} ${isWrong ? 'card-wrong' : ''} ${isSnap ? 'snap-pop' : ''}`;
+      const lockedClass = isCorrect ? 'cursor-default pointer-events-none' : 'cursor-pointer';
+      div.className = `game-card ${sizeClasses} ${lockedClass} select-none ${isSelected ? 'selected-card' : ''} ${isWrong ? 'card-wrong shake-wrong' : ''} ${isSnap ? 'snap-pop' : ''}`;
       div.style.backgroundColor = card.color;
       div.dataset.cardId = card.id;
-      div.draggable = (!gameState.submitted && !isEvaluating);
+      div.draggable = (!gameState.submitted && !isEvaluating && !isCorrect);
 
       div.innerHTML = formatGodnameLines(card.godname);
 
@@ -1513,13 +1515,13 @@
         if (slotObj.evalStatus === 'correct') {
           badge.innerHTML = '<span class="text-emerald-950 drop-shadow-[0_1px_1px_rgba(255,255,255,0.9)] font-black text-base sm:text-lg">✓</span>';
         } else {
-          badge.innerHTML = '<span class="text-stone-900 drop-shadow-[0_1px_1px_rgba(255,255,255,0.6)] font-black text-base sm:text-lg">✕</span>';
+          badge.innerHTML = '<span class="text-red-700 drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] font-black text-base sm:text-lg">✕</span>';
         }
         div.appendChild(badge);
       }
 
       div.addEventListener('dragstart', (e) => {
-        if (gameState.submitted || isEvaluating) {
+        if (gameState.submitted || isEvaluating || isCorrect) {
           e.preventDefault();
           return;
         }
@@ -1536,7 +1538,7 @@
 
       div.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (gameState.submitted || isEvaluating) return;
+        if (gameState.submitted || isEvaluating || isCorrect) return;
 
         if (!selectedCardId) {
           if (location === 'slot') {
@@ -1557,10 +1559,11 @@
         }
 
         if (location === 'slot') {
+          if (slotObj && slotObj.evalStatus === 'correct') return;
           const slotIdx = gameState.slots.indexOf(slotObj);
           const incomingCard = selectedCardId;
           selectedCardId = null;
-          placeCardInSlot(incomingCard, slotIdx);
+          handleSlotAssignment(incomingCard, slotIdx);
         } else {
           selectedCardId = card.id;
           playSound('pickup');
@@ -1569,6 +1572,7 @@
       });
 
       div.addEventListener('pointerdown', (e) => {
+        if (isCorrect) return;
         if (e.pointerType === 'touch' || e.pointerType === 'pen') {
           handleTouchDrag(e, card);
         }
@@ -1629,7 +1633,7 @@
           const poolEl = dropTarget ? (dropTarget.closest('#left-pool-grid') || dropTarget.closest('#mobile-dock-cards') || dropTarget.closest('#mobile-cards-dock')) : null;
 
           if (slotEl && slotEl.dataset.slotIndex !== undefined) {
-            placeCardInSlot(card.id, parseInt(slotEl.dataset.slotIndex, 10));
+            handleSlotAssignment(card.id, parseInt(slotEl.dataset.slotIndex, 10));
           } else if (poolEl) {
             moveCardToPool(card.id);
           } else {
@@ -1643,46 +1647,96 @@
       window.addEventListener('pointercancel', onTouchEnd);
     }
 
-    function placeCardInSlot(cardId, targetSlotIndex) {
-      if (gameState.submitted || isEvaluating) return;
+    function handleSlotAssignment(cardId, targetSlotIndex) {
+      if (!gameState || gameState.submitted || isEvaluating) return null;
+      if (typeof targetSlotIndex !== 'number' || targetSlotIndex < 0 || targetSlotIndex >= gameState.slots.length) return null;
 
       const targetSlot = gameState.slots[targetSlotIndex];
-      if (!targetSlot) return;
+      if (!targetSlot || targetSlot.evalStatus === 'correct') return null;
+
+      const card = gameState.cards.find(c => c.id === cardId);
+      if (!card) return null;
 
       selectedCardId = null;
 
-      const prevPoolIdx = gameState.poolCardIds.indexOf(cardId);
-      const prevSlot = gameState.slots.find(s => s.placedCardId === cardId);
-      const displacedCardId = targetSlot.placedCardId;
+      // 1. Correct Match
+      if (card.correctSign === targetSlot.sign) {
+        targetSlot.placedCardId = card.id;
+        targetSlot.evalStatus = 'correct';
+        lastPlacedCardId = card.id;
 
-      if (displacedCardId === cardId) {
+        // Remove card from pool
+        const poolIdx = gameState.poolCardIds.indexOf(card.id);
+        if (poolIdx !== -1) {
+          gameState.poolCardIds.splice(poolIdx, 1);
+        }
+
+        gameState.score = (typeof gameState.score === 'number' ? gameState.score : 0) + 1;
+        updateScoreDisplay();
+        playSound('correct');
         renderBoard();
-        return;
+
+        // Check if all slots on the current page are solved
+        const allCorrect = gameState.slots.every(s => s.evalStatus === 'correct');
+        if (allCorrect) {
+          handlePageComplete();
+        }
+
+        return { status: 'correct', score: gameState.score, cardId, slotIndex: targetSlotIndex };
       }
 
-      if (prevPoolIdx !== -1) {
-        gameState.poolCardIds.splice(prevPoolIdx, 1);
-      }
-      if (prevSlot) {
-        prevSlot.placedCardId = null;
+      // 2. Incorrect Match
+      targetSlot.placedCardId = card.id;
+      targetSlot.evalStatus = 'wrong';
+      isEvaluating = true;
+
+      // Temporarily remove from pool so card doesn't appear simultaneously in pool & slot
+      const poolIdx = gameState.poolCardIds.indexOf(card.id);
+      if (poolIdx !== -1) {
+        gameState.poolCardIds.splice(poolIdx, 1);
       }
 
-      if (displacedCardId) {
-        if (prevSlot) {
-          // Swap: displaced card into previous slot
-          prevSlot.placedCardId = displacedCardId;
-        } else {
-          // Displace back into pool
-          if (!gameState.poolCardIds.includes(displacedCardId)) {
-            gameState.poolCardIds.push(displacedCardId);
+      renderBoard();
+
+      // Trigger shake animation on target slot card
+      const slotEl = typeof document !== 'undefined' ? document.querySelector(`.drop-slot[data-slot-index="${targetSlotIndex}"]`) : null;
+      const cardEl = slotEl ? slotEl.querySelector('.game-card') : null;
+      if (cardEl) {
+        cardEl.classList.remove('shake-wrong');
+        void cardEl.offsetWidth;
+        cardEl.classList.add('shake-wrong');
+      }
+
+      deductLife();
+
+      // Bounce card back to dock/pool after 400ms
+      setTimeout(() => {
+        if (targetSlot.placedCardId === card.id && targetSlot.evalStatus === 'wrong') {
+          targetSlot.placedCardId = null;
+          targetSlot.evalStatus = null;
+        }
+        if (!gameState.poolCardIds.includes(card.id)) {
+          if (poolIdx !== -1 && poolIdx <= gameState.poolCardIds.length) {
+            gameState.poolCardIds.splice(poolIdx, 0, card.id);
+          } else {
+            gameState.poolCardIds.push(card.id);
           }
         }
-      }
+        isEvaluating = false;
+        renderBoard();
+      }, 400);
 
-      targetSlot.placedCardId = cardId;
-      lastPlacedCardId = cardId;
-      playSound('drop');
-      renderBoard();
+      return { status: 'wrong', livesRemaining: gameState.lives, cardId, slotIndex: targetSlotIndex };
+    }
+
+    function placeCardInSlot(cardId, targetSlotIndex) {
+      return handleSlotAssignment(cardId, targetSlotIndex);
+    }
+
+    function handlePageComplete() {
+      console.log('Page complete for page:', gameState ? gameState.currentPage : 1);
+      playSound('fanfare');
+      fireConfetti(100);
     }
 
     function moveCardToPool(cardId) {
@@ -1691,7 +1745,9 @@
       selectedCardId = null;
       const prevSlot = gameState.slots.find(s => s.placedCardId === cardId);
       if (prevSlot) {
+        if (prevSlot.evalStatus === 'correct') return; // Cannot recall correctly matched card
         prevSlot.placedCardId = null;
+        prevSlot.evalStatus = null;
         if (!gameState.poolCardIds.includes(cardId)) {
           gameState.poolCardIds.push(cardId);
         }
