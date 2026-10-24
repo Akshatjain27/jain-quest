@@ -1097,6 +1097,7 @@
     let timerRemaining = 60;
     let timerSeconds = 60;
     let timerInterval = null;
+    let pageTransitionTimeout = null;
     let isPaused = false;
     let soundEnabled = true;
     let isEvaluating = false;
@@ -1837,10 +1838,15 @@
         if (banner) {
           banner.style.display = 'flex';
         }
-        setTimeout(() => {
+        if (pageTransitionTimeout) {
+          clearTimeout(pageTransitionTimeout);
+          pageTransitionTimeout = null;
+        }
+        pageTransitionTimeout = setTimeout(() => {
           if (banner) {
             banner.style.display = 'none';
           }
+          pageTransitionTimeout = null;
           loadPage(2);
         }, 1500);
       } else {
@@ -2052,6 +2058,10 @@
 
     function returnToStartScreen() {
       stopCountdownTimer();
+      if (pageTransitionTimeout) {
+        clearTimeout(pageTransitionTimeout);
+        pageTransitionTimeout = null;
+      }
       isEvaluating = false;
       selectedCardId = null;
       lastPlacedCardId = null;
@@ -2082,6 +2092,10 @@
     // 7. CONTROLS & TIMERS
     function resetBoard() {
       if (isEvaluating) return;
+      if (pageTransitionTimeout) {
+        clearTimeout(pageTransitionTimeout);
+        pageTransitionTimeout = null;
+      }
       if (confettiAnimationId) {
         cancelAnimationFrame(confettiAnimationId);
         confettiAnimationId = null;
@@ -2102,6 +2116,10 @@
 
     function startRandomGame() {
       if (isEvaluating) return;
+      if (pageTransitionTimeout) {
+        clearTimeout(pageTransitionTimeout);
+        pageTransitionTimeout = null;
+      }
       if (confettiAnimationId) {
         cancelAnimationFrame(confettiAnimationId);
         confettiAnimationId = null;

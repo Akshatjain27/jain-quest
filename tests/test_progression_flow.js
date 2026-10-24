@@ -109,7 +109,8 @@ const bridge = vm.runInContext(`
     triggerVictory,
     returnToStartScreen,
     getTimerRemaining: () => timerRemaining,
-    getTimerInterval: () => timerInterval
+    getTimerInterval: () => timerInterval,
+    getPageTransitionTimeout: () => pageTransitionTimeout
   })
 `, domSandbox);
 
@@ -170,13 +171,31 @@ assert(domElements['gameover-reason'].textContent.includes('समय समा�
 bridge.triggerVictory();
 assert.strictEqual(domElements['victory-modal'].style.display, 'flex', 'Victory modal must be displayed');
 
-// Test returnToStartScreen
+// Test page completion transition and timeout clearance
+bridge.setGameState({
+  screen: 'playing',
+  cards: [],
+  poolCardIds: [],
+  slots: [],
+  submitted: false,
+  score: 10,
+  lives: 3,
+  activeSet: testSet,
+  currentPage: 1
+});
+bridge.handlePageComplete();
+assert.notStrictEqual(bridge.getPageTransitionTimeout(), null, 'pageTransitionTimeout must be active during page transition');
+assert.strictEqual(domElements['page-complete-banner'].style.display, 'flex', 'Page complete banner must be displayed');
+
+// Test returnToStartScreen clears timeout
 bridge.returnToStartScreen();
 assert.strictEqual(domElements['game-playfield'].style.display, 'none', 'Playfield must be hidden');
 assert.strictEqual(domElements['landing-screen'].style.display, 'flex', 'Landing screen must be shown');
 assert.strictEqual(domElements['gameover-modal'].style.display, 'none', 'GameOver modal must be hidden');
 assert.strictEqual(domElements['victory-modal'].style.display, 'none', 'Victory modal must be hidden');
+assert.strictEqual(domElements['page-complete-banner'].style.display, 'none', 'Page complete banner must be hidden');
 assert.strictEqual(bridge.getGameState().screen, 'landing', 'GameState screen must be landing');
 assert.strictEqual(bridge.getTimerInterval(), null, 'Countdown timer interval must be null on start screen');
+assert.strictEqual(bridge.getPageTransitionTimeout(), null, 'pageTransitionTimeout must be cleared on returnToStartScreen');
 
 console.log('✅ Task 5: Progression flow and game over/victory tests passed.');

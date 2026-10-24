@@ -217,6 +217,38 @@
       background: #c7b299;
       border-radius: 4px;
     }
+    /* Landing screen & Logo launch animation */
+    @keyframes logo-launch {
+      0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
+      }
+      50% {
+        transform: scale(1.15);
+        box-shadow: 0 0 40px 14px rgba(245, 158, 11, 0.95);
+      }
+      100% {
+        transform: scale(0.92);
+        opacity: 0.85;
+      }
+    }
+    .logo-launch-active {
+      animation: logo-launch 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% {
+        box-shadow: 0 4px 18px rgba(217, 119, 6, 0.45), 0 0 0 0 rgba(245, 158, 11, 0.4);
+        transform: scale(1);
+      }
+      50% {
+        box-shadow: 0 8px 30px rgba(217, 119, 6, 0.75), 0 0 0 10px rgba(245, 158, 11, 0.15);
+        transform: scale(1.025);
+      }
+    }
+    .btn-pulse-glow {
+      animation: pulse-glow 2.2s infinite ease-in-out;
+    }
   </style>
 </head>
 <body class="min-h-screen flex flex-col justify-between relative select-none">
@@ -322,93 +354,219 @@
   </div>
 
   <!-- =========================================================================
+=========================================================================
+       LANDING SCREEN (Initial View: Logos, Rules Card & Start Game Launch)
+       ========================================================================= -->
+  <section id="landing-screen" class="relative z-30 min-h-screen flex flex-col justify-between max-w-[1200px] mx-auto px-4 py-4 sm:py-6 w-full select-none">
+    
+    <!-- Top-Left Header: Jain Kosh Brand Logo + Title -->
+    <header class="flex items-center justify-between w-full pb-2">
+      <div class="flex items-center gap-3 bg-amber-50/95 backdrop-blur-md border border-amber-300/80 rounded-full px-3 py-1.5 shadow-md">
+        <div class="relative w-10 h-10 sm:w-12 sm:h-12 rounded-full overflow-hidden border-2 border-orange-500 shadow bg-orange-400 flex-shrink-0" title="जैन कोष (Jain Kosh)">
+          <img src="jainkosh-logo.jpeg" alt="Jain Kosh Logo" class="w-full h-full object-cover"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <div style="display:none;" class="w-full h-full items-center justify-center bg-gradient-to-tr from-orange-500 via-amber-400 to-yellow-300">
+            <svg viewBox="0 0 64 64" class="w-full h-full p-1">
+              <circle cx="32" cy="32" r="29" fill="#facc15" stroke="#ef4444" stroke-width="3"/>
+              <rect x="16" y="20" width="15" height="24" rx="2" fill="#f97316"/>
+              <rect x="33" y="20" width="15" height="24" rx="2" fill="#f97316"/>
+              <text x="32" y="35" font-size="9" text-anchor="middle" fill="#fff" font-weight="bold">जैन कोष</text>
+            </svg>
+          </div>
+        </div>
+        <div>
+          <div class="font-bold text-amber-950 text-base sm:text-lg leading-tight flex items-center gap-1.5 font-sans">
+            <span>जैन कोष</span>
+            <span class="text-xs bg-amber-200 text-amber-900 px-2 py-0.5 rounded-full font-semibold">Jain Kosh</span>
+          </div>
+          <div class="text-[11px] sm:text-xs text-amber-800 font-medium">Jain Educational Games & Knowledge Portal</div>
+        </div>
+      </div>
+
+      <!-- Landing Screen Sound Toggle -->
+      <button id="landing-sound-btn" onclick="toggleSound()" class="w-10 h-10 rounded-full bg-white/90 hover:bg-white text-stone-800 flex items-center justify-center shadow-md border border-amber-200 transition" title="ध्वनि चालू/बंद (Toggle Sound)">
+        <svg id="landing-sound-on-icon" class="w-5 h-5 text-amber-700" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+        </svg>
+        <svg id="landing-sound-off-icon" class="w-5 h-5 hidden text-red-500" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+        </svg>
+      </button>
+    </header>
+
+    <!-- Center Hero: Game Logo + Title + Rules + Start Button -->
+    <div class="flex-1 flex flex-col items-center justify-center my-auto text-center px-2 py-4">
+      
+      <!-- Large Jain Quest Game Logo -->
+      <div id="landing-game-logo-container" class="relative mb-3 transition-transform duration-300">
+        <div class="w-32 h-32 sm:w-40 sm:h-40 rounded-full overflow-hidden border-4 border-amber-500 shadow-2xl bg-amber-100 flex items-center justify-center mx-auto">
+          <img id="landing-game-logo-img" src="game-logo.jpeg" alt="Jain Quest Game Logo" class="w-full h-full object-cover"
+               onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+          <div style="display:none;" class="w-full h-full items-center justify-center bg-gradient-to-br from-amber-500 via-yellow-600 to-amber-800 text-white">
+            <svg viewBox="0 0 64 64" class="w-full h-full p-2">
+              <circle cx="32" cy="32" r="28" fill="none" stroke="#fde68a" stroke-width="3"/>
+              <circle cx="32" cy="22" r="6" fill="#fef3c7"/>
+              <path d="M20,44 C20,33 44,33 44,44 Z" fill="#fde68a"/>
+              <text x="32" y="56" font-size="8" text-anchor="middle" fill="#fff" font-weight="bold">JAIN QUEST</text>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Game Title -->
+      <h2 class="font-cinzel text-3xl sm:text-5xl font-extrabold text-amber-950 tracking-wider mb-1 drop-shadow-sm">
+        JAIN QUEST
+      </h2>
+      <p class="text-base sm:text-xl font-bold text-amber-900 mb-4 font-sans">
+        तीर्थंकर एवं चिह्न मिलान (Tirthankara Sign Match)
+      </p>
+
+      <!-- Rules & How to Play Card -->
+      <div class="w-full max-w-xl bg-white/90 backdrop-blur-md rounded-2xl p-4 sm:p-5 border-2 border-amber-400 shadow-xl text-left mb-6">
+        <div class="flex items-center gap-2 mb-3 pb-2 border-b border-amber-200">
+          <span class="text-xl">📜</span>
+          <h3 class="font-bold text-amber-950 text-base sm:text-lg">खेलने के नियम (How to Play)</h3>
+        </div>
+        
+        <ul class="space-y-2.5 text-xs sm:text-sm text-stone-800 font-medium">
+          <li class="flex items-start gap-2.5">
+            <span class="text-amber-600 font-bold text-base flex-shrink-0">🎯</span>
+            <span><strong>20 प्रश्न (20 Questions):</strong> Page 1 (10 प्रश्न) + Page 2 (10 प्रश्न)। तीर्थंकर भगवान के कार्ड को खींचकर या क्लिक करके सही चिह्न (Sign) के बॉक्स में रखें।</span>
+          </li>
+          <li class="flex items-start gap-2.5">
+            <span class="text-blue-600 font-bold text-base flex-shrink-0">⏱️</span>
+            <span><strong>1 मिनट प्रति पेज (60s Timer per Page):</strong> प्रत्येक पेज (10 प्रश्न) को हल करने के लिए 60 सेकंड का समय मिलेगा।</span>
+          </li>
+          <li class="flex items-start gap-2.5">
+            <span class="text-red-500 font-bold text-base flex-shrink-0">❤️</span>
+            <span><strong>3 लाइफलाइन (3 Lifelines):</strong> खेल में कुल 3 लाइफलाइन (❤️❤️❤️) हैं। गलत मिलान पर 1 लाइफलाइन घटेगी।</span>
+          </li>
+          <li class="flex items-start gap-2.5">
+            <span class="text-emerald-600 font-bold text-base flex-shrink-0">⚡</span>
+            <span><strong>तुरंत जांच (Instant Match Checking):</strong> कार्ड रखते ही तुरंत जांच होगी—सही होने पर कार्ड लॉक, गलत होने पर वापस पूल में।</span>
+          </li>
+          <li class="flex items-start gap-2.5">
+            <span class="text-purple-600 font-bold text-base flex-shrink-0">⚠️</span>
+            <span><strong>गेम ओवर (Game Over):</strong> 3 लाइफलाइन समाप्त होने या समय खत्म होने पर गेम समाप्त हो जाएगा।</span>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Start Game Button -->
+      <button id="start-game-btn" onclick="launchGame()" class="btn-pulse-glow group relative inline-flex items-center justify-center gap-3 px-8 sm:px-12 py-3.5 sm:py-4 rounded-2xl bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 hover:from-amber-700 hover:via-amber-600 hover:to-yellow-600 text-white font-extrabold text-lg sm:text-2xl shadow-2xl border-2 border-amber-300 cursor-pointer transition-all duration-200 active:scale-95">
+        <span class="text-2xl sm:text-3xl">🚀</span>
+        <span>गेम शुरू करें (Start Game)</span>
+        <svg class="w-6 h-6 sm:w-7 sm:h-7 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+        </svg>
+      </button>
+
+    </div>
+
+    <!-- Bottom Footer Note on Landing Screen -->
+    <footer class="text-center text-xs text-amber-900/80 font-semibold py-2">
+      जैन कोष (Jain Kosh) &bull; शुद्ध जैन ज्ञान एवं संस्कार संवर्धन
+    </footer>
+  </section>
+
+  <!-- =========================================================================
+       ACTIVE GAME PLAYFIELD (Header, Cards Pool, Drop Slots & Controls)
+       Hidden initially on Landing Screen, revealed on launchGame()
+       ========================================================================= -->
+  <div id="game-playfield" class="min-h-screen flex flex-col justify-between relative select-none w-full" style="display: none;">
+
+  <!-- =========================================================================
        TOP HEADER BAR (Logos, Timer, Single-Page View, Score & Data Controls)
        ========================================================================= -->
-  <header class="relative z-20 w-full bg-white/85 backdrop-blur-md border-b border-amber-900/20 px-3 py-1.5 shadow-sm">
-    <div class="max-w-[1600px] mx-auto flex flex-wrap items-center justify-between gap-2">
+  <header class="relative z-20 w-full bg-white/90 backdrop-blur-md border-b border-amber-900/20 px-3 py-2 shadow-sm">
+    <div class="max-w-[1600px] mx-auto flex items-center justify-between gap-2 sm:gap-4">
 
-      <!-- Left: Live Timer + Game Logo + Org Logo -->
-      <div class="flex items-center gap-3">
-        <div class="bg-amber-950/90 text-amber-50 px-3 py-1 rounded-lg font-mono font-bold text-base sm:text-lg shadow-inner flex items-center gap-1.5" title="Game Timer">
-          <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <!-- Left: Jain Kosh Brand Logo + Subtitle -->
+      <div class="flex items-center gap-2.5 flex-shrink-0">
+        <div class="relative w-9 h-9 sm:w-11 sm:h-11 rounded-full overflow-hidden border-2 border-orange-500 shadow bg-orange-400 flex-shrink-0" title="जैन कोष (Jain Kosh)">
+          <img id="org-logo-img" src="jainkosh-logo.jpeg" alt="Jain Kosh Logo" class="w-full h-full object-cover"
+               onerror="this.style.display='none'; document.getElementById('org-logo-fallback').style.display='flex';" />
+          <div id="org-logo-fallback" style="display:none;" class="w-full h-full items-center justify-center bg-gradient-to-tr from-orange-500 via-amber-400 to-yellow-300">
+            <svg viewBox="0 0 64 64" class="w-full h-full p-1">
+              <circle cx="32" cy="32" r="29" fill="#facc15" stroke="#ef4444" stroke-width="3"/>
+              <rect x="16" y="20" width="15" height="24" rx="2" fill="#f97316"/>
+              <rect x="33" y="20" width="15" height="24" rx="2" fill="#f97316"/>
+              <text x="32" y="35" font-size="9" text-anchor="middle" fill="#fff" font-weight="bold">जैन कोष</text>
+            </svg>
+          </div>
+        </div>
+        <div class="hidden sm:block leading-tight">
+          <div class="font-bold text-amber-950 text-sm">जैन कोष</div>
+          <div class="text-[10px] text-amber-800 font-medium">Jain Kosh</div>
+        </div>
+      </div>
+
+      <!-- Center: Jain Quest Game Logo & Title -->
+      <div class="flex items-center gap-2 bg-amber-50/90 border border-amber-300/80 rounded-full px-3 py-1 shadow-sm flex-shrink-0">
+        <div class="relative w-8 h-8 sm:w-10 sm:h-10 rounded-full overflow-hidden border-2 border-amber-600 shadow bg-amber-100 flex-shrink-0" title="Jain Quest">
+          <img id="game-logo-img" src="game-logo.jpeg" alt="Jain Quest Logo" class="w-full h-full object-cover"
+               onerror="this.style.display='none'; document.getElementById('game-logo-fallback').style.display='flex';" />
+          <div id="game-logo-fallback" style="display:none;" class="w-full h-full items-center justify-center bg-gradient-to-br from-amber-500 via-yellow-600 to-amber-800 text-white">
+            <svg viewBox="0 0 64 64" class="w-full h-full p-1">
+              <circle cx="32" cy="32" r="29" fill="none" stroke="#fde68a" stroke-width="3"/>
+              <circle cx="32" cy="22" r="6" fill="#fef3c7"/>
+              <path d="M20,44 C20,33 44,33 44,44 Z" fill="#fde68a"/>
+              <text x="32" y="56" font-size="8" text-anchor="middle" fill="#fff" font-weight="bold">JAIN QUEST</text>
+            </svg>
+          </div>
+        </div>
+        <div class="leading-tight text-center sm:text-left">
+          <div class="font-cinzel font-extrabold text-amber-950 text-sm sm:text-base tracking-wide">JAIN QUEST</div>
+          <div class="text-[10px] sm:text-[11px] text-amber-800 font-medium hidden md:block">तीर्थंकर एवं चिह्न मिलान</div>
+        </div>
+      </div>
+
+      <!-- Right: Page Indicator, Score, Lifelines, Countdown Timer, Sound & Fullscreen -->
+      <div class="flex items-center gap-1.5 sm:gap-2.5 flex-wrap justify-end">
+        <!-- Page Indicator -->
+        <div id="page-indicator" class="bg-amber-100/90 border border-amber-400 text-amber-950 font-bold px-2 sm:px-2.5 py-1 rounded-lg text-xs sm:text-sm shadow-sm whitespace-nowrap" title="Current Page">
+          Page 1 of 2
+        </div>
+
+        <!-- Score Display -->
+        <div class="flex items-center gap-1 bg-emerald-50 border border-emerald-400 text-emerald-900 px-2 sm:px-2.5 py-1 rounded-lg font-extrabold text-xs sm:text-sm shadow-sm" title="Total Score">
+          <span class="text-emerald-600">✓</span>
+          <span id="score-display">0 / 20</span>
+        </div>
+
+        <!-- 3 Lifelines -->
+        <div id="lifelines-container" class="flex items-center gap-0.5 bg-rose-50 border border-rose-300 px-2 py-1 rounded-lg text-sm sm:text-base shadow-sm select-none" title="3 Lifelines">
+          <span class="heart-icon transition-transform inline-block">❤️</span>
+          <span class="heart-icon transition-transform inline-block">❤️</span>
+          <span class="heart-icon transition-transform inline-block">❤️</span>
+        </div>
+
+        <!-- 1-Minute Countdown Timer -->
+        <div class="bg-amber-950 text-amber-50 px-2 sm:px-2.5 py-1 rounded-lg font-mono font-bold text-xs sm:text-sm shadow-inner flex items-center gap-1.5" title="Countdown Timer (1 Minute)">
+          <svg class="w-3.5 h-3.5 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10" stroke-width="2"></circle>
             <path stroke-linecap="round" stroke-width="2" d="M12 6v6l4 2"></path>
           </svg>
-          <span id="timer-display">0:00</span>
+          <span id="countdown-timer">1:00</span>
+          <span id="timer-display" class="hidden">1:00</span>
         </div>
 
-        <!-- Brand Logos Container -->
-        <div class="flex items-center gap-2.5 bg-amber-50/90 border border-amber-300/80 rounded-full px-2.5 py-1 shadow-sm">
-          <!-- Game Logo -->
-          <div class="relative w-9 h-9 sm:w-11 sm:h-11 rounded-full overflow-hidden border-2 border-amber-600 shadow bg-amber-100 flex-shrink-0" title="Jain Quest">
-            <img id="game-logo-img" src="game-logo.jpeg" alt="Jain Quest Logo" class="w-full h-full object-cover"
-                 onerror="this.style.display='none'; document.getElementById('game-logo-fallback').style.display='flex';" />
-            <div id="game-logo-fallback" style="display:none;" class="w-full h-full items-center justify-center bg-gradient-to-br from-amber-500 via-yellow-600 to-amber-800 text-white">
-              <svg viewBox="0 0 64 64" class="w-full h-full p-1">
-                <circle cx="32" cy="32" r="29" fill="none" stroke="#fde68a" stroke-width="3"/>
-                <circle cx="32" cy="22" r="6" fill="#fef3c7"/>
-                <path d="M20,44 C20,33 44,33 44,44 Z" fill="#fde68a"/>
-                <text x="32" y="56" font-size="8" text-anchor="middle" fill="#fff" font-weight="bold">JAIN QUEST</text>
-              </svg>
-            </div>
-          </div>
-
-          <div class="leading-tight hidden sm:block">
-            <div class="font-cinzel font-extrabold text-amber-950 text-sm md:text-base tracking-wide flex items-center gap-1.5">
-              <span>JAIN QUEST</span>
-              <span class="text-xs bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded font-sans font-bold">जैन कोष</span>
-            </div>
-            <div class="text-[11px] text-amber-800 font-medium">तीर्थंकर एवं चिह्न मिलान (Tirthankara Sign Match)</div>
-          </div>
-
-          <!-- Org Logo -->
-          <div class="relative w-9 h-9 sm:w-11 sm:h-11 rounded-full overflow-hidden border-2 border-orange-500 shadow bg-orange-400 flex-shrink-0" title="जैन कोष (Jain Kosh)">
-            <img id="org-logo-img" src="jainkosh-logo.jpeg" alt="Jain Kosh Logo" class="w-full h-full object-cover"
-                 onerror="this.style.display='none'; document.getElementById('org-logo-fallback').style.display='flex';" />
-            <div id="org-logo-fallback" style="display:none;" class="w-full h-full items-center justify-center bg-gradient-to-tr from-orange-500 via-amber-400 to-yellow-300">
-              <svg viewBox="0 0 64 64" class="w-full h-full p-1">
-                <circle cx="32" cy="32" r="29" fill="#facc15" stroke="#ef4444" stroke-width="3"/>
-                <rect x="16" y="20" width="15" height="24" rx="2" fill="#f97316"/>
-                <rect x="33" y="20" width="15" height="24" rx="2" fill="#f97316"/>
-                <text x="32" y="35" font-size="9" text-anchor="middle" fill="#fff" font-weight="bold">जैन कोष</text>
-              </svg>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Center: Active Dataset Badge Pill -->
-      <div id="active-dataset-pill" class="hidden md:flex items-center gap-1.5 bg-amber-950/85 text-amber-200 px-3 py-1 rounded-full border border-amber-400/60 shadow-sm text-xs font-semibold">
-        <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-        <span id="active-dataset-name">Video Set 1</span>
-      </div>
-
-      <!-- Right: New Game + Dataset Mode + JSON Manager + Score Display -->
-      <div class="flex items-center gap-2">
-        <button id="new-game-btn" onclick="startRandomGame()" class="text-xs sm:text-sm bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-bold py-1.5 px-3 rounded-lg shadow flex items-center gap-1.5 transition" title="Start a fresh game with a random 10-Tirthankara set">
-          <span>🎲 New Game</span>
-          <span class="hidden sm:inline text-amber-200 text-[11px]">(Random Set)</span>
-        </button>
-
-        <select id="dataset-select" onchange="switchDatasetMode(this.value)" class="text-xs sm:text-sm bg-amber-100 hover:bg-amber-200 text-amber-950 font-bold py-1.5 px-2.5 rounded-lg border border-amber-400 cursor-pointer focus:outline-none">
-          <option value="random">🎲 Random Set</option>
-          <option value="video_set1">Video Set 1 (10 भगवान)</option>
-          <option value="video_set2">Video Set 2 (10 भगवान)</option>
-          <option value="authentic_10">Authentic Signs (10 भगवान)</option>
-          <option value="json10_exact">Attached jain-quest.json (Exact)</option>
-        </select>
-
-        <button onclick="openDataModal()" class="text-xs sm:text-sm bg-stone-800 hover:bg-stone-700 text-white font-semibold py-1.5 px-3 rounded-lg shadow flex items-center gap-1.5 transition" title="Upload Custom JSON, Multi-JSON Sets, or Logos">
-          <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+        <!-- Sound Toggle -->
+        <button id="sound-btn" onclick="toggleSound()" class="w-8 h-8 rounded-lg bg-stone-900/80 hover:bg-stone-900 text-white flex items-center justify-center shadow transition flex-shrink-0" title="Toggle Sound">
+          <svg id="sound-on-icon" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
           </svg>
-          <span class="hidden md:inline">JSON Manager</span>
+          <svg id="sound-off-icon" class="w-4 h-4 hidden text-red-400" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
+          </svg>
         </button>
 
-        <div class="flex items-center gap-1 bg-emerald-50 border border-emerald-400 text-emerald-900 px-3 py-1 rounded-lg font-extrabold text-base sm:text-lg shadow-sm" title="Total Correct Answers">
-          <span class="text-emerald-600">✓</span>
-          <span id="score-display">0</span>
-        </div>
+        <!-- Fullscreen Toggle -->
+        <button onclick="toggleFullscreen()" class="w-8 h-8 rounded-lg bg-stone-900/80 hover:bg-stone-900 text-white flex items-center justify-center shadow transition flex-shrink-0" title="Toggle Fullscreen">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+          </svg>
+        </button>
       </div>
 
     </div>
@@ -423,7 +581,7 @@
     <div id="helper-banner" class="mb-2 flex items-center justify-between bg-amber-950/75 text-amber-50 text-xs sm:text-sm px-3 py-1.5 rounded-lg backdrop-blur-sm">
       <div class="flex items-center gap-2">
         <span class="bg-amber-400 text-amber-950 font-extrabold px-2 py-0.5 rounded text-xs">HOW TO PLAY</span>
-        <span>बाईं ओर से <strong>तीर्थंकर भगवान</strong> का कार्ड खींचकर (Drag) या क्लिक करके सही <strong>चिह्न (Sign)</strong> के खाली बॉक्स में रखें, फिर <strong>Submit Answers</strong> दबाएँ।</span>
+        <span>बाईं ओर (या नीचे ट्रे) से <strong>तीर्थंकर भगवान</strong> का कार्ड खींचकर या क्लिक करके सही <strong>चिह्न (Sign)</strong> के बॉक्स में रखें — उत्तर तुरंत जाँचा जाएगा!</span>
       </div>
       <button onclick="resetBoard()" class="text-amber-300 hover:text-white font-bold underline ml-2 whitespace-nowrap">Reset Board</button>
     </div>
@@ -484,36 +642,18 @@
       </button>
     </div>
 
-    <!-- Bottom Center: Submit Answers + Show Correct -->
+    <!-- Bottom Center: Show Correct Answers (Hidden / Debug) -->
     <div class="flex items-center gap-3">
-      <button id="submit-btn" onclick="submitAnswers()" class="submit-btn px-6 sm:px-8 py-2 text-sm sm:text-base tracking-wide shadow-md">
-        Submit Answers
-      </button>
-
       <button id="show-answers-btn" onclick="fillCorrectAnswers()" class="hidden px-4 py-2 rounded-md bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs sm:text-sm shadow transition">
         Show Correct Answers
       </button>
     </div>
 
-    <!-- Bottom Right: Sound & Fullscreen -->
-    <div class="flex items-center gap-2">
-      <button id="sound-btn" onclick="toggleSound()" class="w-9 h-9 rounded-lg bg-stone-900/80 hover:bg-stone-900 text-white flex items-center justify-center shadow transition" title="Toggle Sound Effects">
-        <svg id="sound-on-icon" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
-        </svg>
-        <svg id="sound-off-icon" class="w-5 h-5 hidden text-red-400" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
-        </svg>
-      </button>
-
-      <button onclick="toggleFullscreen()" class="w-9 h-9 rounded-lg bg-stone-900/80 hover:bg-stone-900 text-white flex items-center justify-center shadow transition" title="Toggle Fullscreen">
-        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
-        </svg>
-      </button>
-    </div>
+    <!-- Bottom Right Spacer -->
+    <div></div>
 
   </footer>
+  </div> <!-- end #game-playfield -->
 
   <!-- Floating Drag Ghost Element for Pointer / Touch Dragging -->
   <div id="drag-ghost" class="game-card w-36 h-20"></div>
@@ -625,6 +765,72 @@
         </button>
         <button onclick="closeResultModal(); fillCorrectAnswers();" class="px-3.5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm shadow transition flex items-center gap-1.5" title="Show all correct answers">
           <span>Show Correct Answers</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       PAGE 1 COMPLETE CELEBRATORY BANNER (1.5s Overlay)
+       ========================================================================= -->
+  <div id="page-complete-banner" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm items-center justify-center p-4 select-none" style="display: none;">
+    <div class="bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 text-white rounded-3xl max-w-lg w-full p-8 text-center shadow-2xl border-4 border-amber-300 transform scale-100 transition-all">
+      <div class="text-5xl mb-3 animate-bounce">🎉</div>
+      <h2 class="text-3xl font-extrabold tracking-wide mb-2 drop-shadow">Page 1 Complete! 🎉</h2>
+      <p class="text-xl font-bold text-amber-100 mb-4">शानदार! Page 2 शुरू हो रहा है...</p>
+      <div class="inline-flex items-center gap-2.5 bg-amber-900/50 px-4 py-2 rounded-full text-sm font-semibold text-amber-200">
+        <span>⏱️ फ्रेश 60s टाइमर</span>
+        <span>•</span>
+        <span>❤️ लाइफलाइन जारी रहेंगी</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       GAME OVER MODAL (3 Strikes or Timeout)
+       ========================================================================= -->
+  <div id="gameover-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm items-center justify-center p-4 select-none" style="display: none;">
+    <div class="bg-gradient-to-b from-stone-50 via-white to-amber-50 rounded-3xl max-w-md w-full p-6 text-center shadow-2xl border-4 border-red-500">
+      <div class="w-16 h-16 mx-auto mb-3 rounded-full bg-red-100 border-2 border-red-400 flex items-center justify-center text-3xl">
+        💔
+      </div>
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-stone-900 mb-1">खेल समाप्त (Game Over)</h2>
+      <p id="gameover-reason" class="text-base font-bold text-red-600 mb-4">3 गलत उत्तर (All 3 Lifelines Used)</p>
+
+      <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 shadow-inner">
+        <div class="text-xs uppercase tracking-wider text-stone-500 font-bold mb-1">कुल स्कोर (Final Score)</div>
+        <div id="gameover-score" class="text-3xl font-black text-amber-950">0 / 20</div>
+      </div>
+
+      <div class="flex items-center justify-center gap-3">
+        <button id="gameover-start-btn" onclick="returnToStartScreen()" class="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-extrabold text-base shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2 cursor-pointer" title="Return to Start Screen">
+          <span>🏠</span>
+          <span>स्टार्ट स्क्रीन (Start Screen)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       VICTORY MODAL (20/20 Complete)
+       ========================================================================= -->
+  <div id="victory-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm items-center justify-center p-4 select-none" style="display: none;">
+    <div class="bg-gradient-to-b from-amber-50 via-yellow-50 to-white rounded-3xl max-w-md w-full p-6 text-center shadow-2xl border-4 border-amber-500">
+      <div class="w-20 h-20 mx-auto mb-3 rounded-full bg-amber-100 border-2 border-amber-500 flex items-center justify-center text-4xl animate-bounce">
+        🏆
+      </div>
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-amber-950 mb-1">🏆 जय जिनेन्द्र! अद्भुत प्रदर्शन!</h2>
+      <p class="text-sm font-semibold text-amber-800 mb-4">शानदार! आपने सभी 20 तीर्थंकर एवं उनके चिह्नों का सही मिलान किया।</p>
+
+      <div class="bg-emerald-50 border border-emerald-300 rounded-2xl p-4 mb-6 shadow-inner">
+        <div class="text-xs uppercase tracking-wider text-emerald-800 font-bold mb-1">विजय स्कोर (Victory Score)</div>
+        <div id="victory-score" class="text-3xl font-black text-emerald-600">20 / 20 - सभी 20 सही उत्तर!</div>
+      </div>
+
+      <div class="flex items-center justify-center gap-3">
+        <button id="victory-start-btn" onclick="returnToStartScreen()" class="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 hover:from-amber-700 hover:to-orange-700 text-white font-extrabold text-base shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2 cursor-pointer" title="Play Again">
+          <span>🔄</span>
+          <span>फिर से खेलें (Play Again)</span>
         </button>
       </div>
     </div>
@@ -746,6 +952,113 @@
       return added;
     }
 
+    // =========================================================================
+    // PRE-BUNDLED 20-QUESTION DATASETS (Page 1: 10, Page 2: 10)
+    // =========================================================================
+    const SET_1_VIDEO_COMBINED = {
+      id: 'video_combined_20',
+      name: 'वीडियो सेट 1 व 2 (Video Combined 20)',
+      page1: [
+        { "godname": "कुंथुनाथ भगवान", "sign": "बकरा" },
+        { "godname": "धर्मनाथ भगवान", "sign": "वज्रदंड" },
+        { "godname": "सुमतिनाथ भगवान", "sign": "चकवा" },
+        { "godname": "महावीर भगवान", "sign": "सिंह" },
+        { "godname": "चंद्रप्रभ भगवान", "sign": "चंद्रमा" },
+        { "godname": "आदिनाथ भगवान", "sign": "बैल" },
+        { "godname": "श्रेयांसनाथ भगवान", "sign": "गेंडा" },
+        { "godname": "पार्श्वनाथ भगवान", "sign": "सर्प" },
+        { "godname": "पद्मप्रभु भगवान", "sign": "लाल कमल" },
+        { "godname": "संभवनाथ भगवान", "sign": "घोड़ा" }
+      ],
+      page2: [
+        { "godname": "शीतलनाथ भगवान", "sign": "कल्पवृक्ष" },
+        { "godname": "अभिनंदननाथ भगवान", "sign": "बंदर" },
+        { "godname": "वासुपूज्य भगवान", "sign": "भैंसा" },
+        { "godname": "विमलनाथ भगवान", "sign": "शूकर" },
+        { "godname": "सुपार्श्वनाथ भगवान", "sign": "स्वस्तिक" },
+        { "godname": "शांतिनाथ भगवान", "sign": "हिरण" },
+        { "godname": "अनंतनाथ भगवान", "sign": "सेही" },
+        { "godname": "पुष्पदंत भगवान", "sign": "मगर" },
+        { "godname": "मुनिसुव्रतनाथ भगवान", "sign": "कछुआ" },
+        { "godname": "अजितनाथ भगवान", "sign": "हाथी" }
+      ]
+    };
+    
+    const SET_2_CANONICAL = {
+      id: 'canonical_order_20',
+      name: 'क्रमबद्ध तीर्थंकर 1 से 20 (Canonical Order 20)',
+      page1: [
+        { "godname": "आदिनाथ भगवान", "sign": "बैल" },
+        { "godname": "अजितनाथ भगवान", "sign": "हाथी" },
+        { "godname": "संभवनाथ भगवान", "sign": "घोड़ा" },
+        { "godname": "अभिनंदननाथ भगवान", "sign": "बंदर" },
+        { "godname": "सुमतिनाथ भगवान", "sign": "चकवा" },
+        { "godname": "पद्मप्रभु भगवान", "sign": "लाल कमल" },
+        { "godname": "सुपार्श्वनाथ भगवान", "sign": "स्वस्तिक" },
+        { "godname": "चंद्रप्रभ भगवान", "sign": "चंद्रमा" },
+        { "godname": "पुष्पदंत भगवान", "sign": "मगर" },
+        { "godname": "शीतलनाथ भगवान", "sign": "कल्पवृक्ष" }
+      ],
+      page2: [
+        { "godname": "श्रेयांसनाथ भगवान", "sign": "गेंडा" },
+        { "godname": "वासुपूज्य भगवान", "sign": "भैंसा" },
+        { "godname": "विमलनाथ भगवान", "sign": "शूकर" },
+        { "godname": "अनंतनाथ भगवान", "sign": "सेही" },
+        { "godname": "धर्मनाथ भगवान", "sign": "वज्रदंड" },
+        { "godname": "शांतिनाथ भगवान", "sign": "हिरण" },
+        { "godname": "कुंथुनाथ भगवान", "sign": "बकरा" },
+        { "godname": "अरनाथ भगवान", "sign": "मछली" },
+        { "godname": "मल्लिनाथ भगवान", "sign": "कलश" },
+        { "godname": "मुनिसुव्रतनाथ भगवान", "sign": "कछुआ" }
+      ]
+    };
+    
+    const SET_3_AUTHENTIC_MIX = {
+      id: 'authentic_mix_20',
+      name: 'प्रामाणिक तीर्थंकर संकलन (Authentic Mix 20)',
+      page1: [
+        { "godname": "नेमिनाथ भगवान", "sign": "शंख" },
+        { "godname": "पार्श्वनाथ भगवान", "sign": "सर्प" },
+        { "godname": "महावीर भगवान", "sign": "सिंह" },
+        { "godname": "आदिनाथ भगवान", "sign": "बैल" },
+        { "godname": "शांतिनाथ भगवान", "sign": "हिरण" },
+        { "godname": "चंद्रप्रभ भगवान", "sign": "चंद्रमा" },
+        { "godname": "अजितनाथ भगवान", "sign": "हाथी" },
+        { "godname": "मल्लिनाथ भगवान", "sign": "कलश" },
+        { "godname": "संभवनाथ भगवान", "sign": "घोड़ा" },
+        { "godname": "पद्मप्रभु भगवान", "sign": "लाल कमल" }
+      ],
+      page2: [
+        { "godname": "सुपार्श्वनाथ भगवान", "sign": "स्वस्तिक" },
+        { "godname": "नमिनाथ भगवान", "sign": "नीलकमल" },
+        { "godname": "धर्मनाथ भगवान", "sign": "वज्रदंड" },
+        { "godname": "कुंथुनाथ भगवान", "sign": "बकरा" },
+        { "godname": "पुष्पदंत भगवान", "sign": "मगर" },
+        { "godname": "शीतलनाथ भगवान", "sign": "कल्पवृक्ष" },
+        { "godname": "श्रेयांसनाथ भगवान", "sign": "गेंडा" },
+        { "godname": "वासुपूज्य भगवान", "sign": "भैंसा" },
+        { "godname": "विमलनाथ भगवान", "sign": "शूकर" },
+        { "godname": "मुनिसुव्रतनाथ भगवान", "sign": "कछुआ" }
+      ]
+    };
+    
+    const GAME_SETS_20 = [
+      SET_1_VIDEO_COMBINED,
+      SET_2_CANONICAL,
+      SET_3_AUTHENTIC_MIX
+    ];
+    
+    function pickRandomGameSet20(excludeId) {
+      if (!GAME_SETS_20 || GAME_SETS_20.length === 0) return null;
+      let pool = GAME_SETS_20;
+      if (excludeId && pool.length > 1) {
+        const filtered = pool.filter(s => s.id !== excludeId);
+        if (filtered.length > 0) pool = filtered;
+      }
+      const idx = Math.floor(Math.random() * pool.length);
+      return pool[idx];
+    }
+
     // 10 unique, distinct pastel card colors (no duplicates)
     const CARD_COLORS = [
       "#f6b26b", // Tangerine
@@ -766,22 +1079,29 @@
     let activeDatasetId = 'video_set1';
     let currentDatasetMode = 'random';
     
-    // Core Game State (Single Page)
+    // Core Game State (2-Page 20-Question Arcade)
     let gameState = {
+      screen: 'landing',
       cards: [],
       poolCardIds: [],
       slots: [],
       submitted: false,
-      score: 0
+      score: 0,
+      lives: 3,
+      activeSet: null,
+      currentPage: 1
     };
 
     let selectedCardId = null;
     let lastPlacedCardId = null;
-    let timerSeconds = 0;
+    let timerRemaining = 60;
+    let timerSeconds = 60;
     let timerInterval = null;
+    let pageTransitionTimeout = null;
     let isPaused = false;
     let soundEnabled = true;
     let isEvaluating = false;
+    let isLaunching = false;
 
     // 3. WEB AUDIO SYNTHESIZER
     let audioCtx = null;
@@ -883,6 +1203,22 @@
             osc.start(now + i * 0.09);
             osc.stop(now + i * 0.09 + 0.46);
           });
+        } else if (type === 'launch' || type === 'start') {
+          // Rising energetic launch chime: ascending sine arpeggio
+          const freqs = [392.00, 523.25, 659.25, 783.99, 1046.50]; // G4, C5, E5, G5, C6
+          freqs.forEach((freq, idx) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            const noteStart = now + idx * 0.08;
+            osc.frequency.setValueAtTime(freq, noteStart);
+            gain.gain.setValueAtTime(0.28, noteStart);
+            gain.gain.exponentialRampToValueAtTime(0.001, noteStart + 0.35);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(noteStart);
+            osc.stop(noteStart + 0.36);
+          });
         }
       } catch (e) {
         // Audio error caught safely
@@ -895,7 +1231,7 @@
 
     function fireConfetti(particleCount = 130) {
       const canvas = document.getElementById('fx-canvas');
-      if (!canvas) return;
+      if (!canvas || typeof canvas.getContext !== 'function') return;
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
@@ -979,16 +1315,16 @@
     }
 
     function initGameBoard(dataset) {
-      const slice = dataset.slice(0, 10);
+      const slice = (dataset && Array.isArray(dataset)) ? dataset.slice(0, 10) : [];
 
       const cards = slice.map((item, idx) => ({
         id: `card_${idx}`,
-        godname: item.godname.trim(),
-        correctSign: item.sign.trim(),
+        godname: (item.godname || '').trim(),
+        correctSign: (item.sign || '').trim(),
         color: CARD_COLORS[idx % CARD_COLORS.length]
       }));
 
-      const shuffledSigns = shuffleArray(slice.map(item => item.sign.trim()));
+      const shuffledSigns = shuffleArray(slice.map(item => (item.sign || '').trim()));
 
       const slots = shuffledSigns.map((signText, sIdx) => ({
         slotId: `slot_${sIdx}`,
@@ -1002,13 +1338,46 @@
         poolCardIds: shuffleArray(cards.map(c => c.id)),
         slots,
         submitted: false,
-        score: 0
+        score: (gameState && typeof gameState.score === 'number') ? gameState.score : 0,
+        lives: (gameState && typeof gameState.lives === 'number') ? gameState.lives : 3,
+        activeSet: (gameState && gameState.activeSet) ? gameState.activeSet : null,
+        currentPage: (gameState && gameState.currentPage) ? gameState.currentPage : 1,
+        screen: (gameState && gameState.screen) ? gameState.screen : 'playing'
       };
 
       selectedCardId = null;
       lastPlacedCardId = null;
       updateScoreDisplay();
+      updatePageIndicator();
+      updateLifelinesUI();
       updateUnplacedBadge();
+    }
+
+    function loadPage(pageNum = 1) {
+      if (!gameState) return;
+      gameState.currentPage = pageNum;
+
+      let pageData = [];
+      if (gameState.activeSet) {
+        if (pageNum === 2 && gameState.activeSet.page2) {
+          pageData = gameState.activeSet.page2;
+        } else if (gameState.activeSet.page1) {
+          pageData = gameState.activeSet.page1;
+        } else if (gameState.activeSet['page' + pageNum]) {
+          pageData = gameState.activeSet['page' + pageNum];
+        }
+        activeDataset = [...pageData];
+        activeDatasetName = `${gameState.activeSet.name} (Page ${pageNum})`;
+        activeDatasetId = gameState.activeSet.id;
+        updateActiveDatasetUI();
+      } else if (activeDataset && Array.isArray(activeDataset)) {
+        pageData = activeDataset;
+      }
+
+      initGameBoard(pageData);
+      renderBoard();
+      updatePageIndicator();
+      resetCountdownTimer(60);
     }
 
     function formatGodnameLines(name) {
@@ -1135,17 +1504,17 @@
           }
 
           dropBox.addEventListener('click', (ev) => {
-            if (isEvaluating || gameState.submitted) return;
+            if (isEvaluating || gameState.submitted || slot.evalStatus === 'correct') return;
             if (selectedCardId && !slot.placedCardId) {
               ev.stopPropagation();
               const cardToPlace = selectedCardId;
               selectedCardId = null;
-              placeCardInSlot(cardToPlace, sIdx);
+              handleSlotAssignment(cardToPlace, sIdx);
             }
           });
 
           dropBox.addEventListener('dragover', (e) => {
-            if (isEvaluating || gameState.submitted) return;
+            if (isEvaluating || gameState.submitted || slot.evalStatus === 'correct') return;
             e.preventDefault();
             e.dataTransfer.dropEffect = 'move';
             dropBox.classList.add('drag-over');
@@ -1154,13 +1523,13 @@
             dropBox.classList.remove('drag-over');
           });
           dropBox.addEventListener('drop', (e) => {
-            if (isEvaluating || gameState.submitted) return;
+            if (isEvaluating || gameState.submitted || slot.evalStatus === 'correct') return;
             e.preventDefault();
             dropBox.classList.remove('drag-over');
             const draggedCardId = e.dataTransfer.getData('text/plain') || selectedCardId;
             if (draggedCardId) {
               selectedCardId = null;
-              placeCardInSlot(draggedCardId, sIdx);
+              handleSlotAssignment(draggedCardId, sIdx);
             }
           });
 
@@ -1169,10 +1538,10 @@
           signLabel.innerHTML = formatSignLines(slot.sign);
 
           signLabel.addEventListener('click', () => {
-            if (isEvaluating || gameState.submitted || !selectedCardId) return;
+            if (isEvaluating || gameState.submitted || slot.evalStatus === 'correct' || !selectedCardId) return;
             const cardToPlace = selectedCardId;
             selectedCardId = null;
-            placeCardInSlot(cardToPlace, sIdx);
+            handleSlotAssignment(cardToPlace, sIdx);
           });
 
           rowWrapper.appendChild(dropBox);
@@ -1210,6 +1579,7 @@
     function createCardElement(card, location, slotObj) {
       const div = document.createElement('div');
       const isSelected = (selectedCardId === card.id);
+      const isCorrect = (slotObj && slotObj.evalStatus === 'correct');
       const isWrong = (slotObj && slotObj.evalStatus === 'wrong');
       const isSnap = (lastPlacedCardId === card.id);
 
@@ -1218,10 +1588,11 @@
         sizeClasses = 'min-w-[120px] sm:min-w-[140px] h-[58px] sm:h-[68px] text-base sm:text-lg flex-shrink-0';
       }
 
-      div.className = `game-card ${sizeClasses} cursor-pointer select-none ${isSelected ? 'selected-card' : ''} ${isWrong ? 'card-wrong' : ''} ${isSnap ? 'snap-pop' : ''}`;
+      const lockedClass = isCorrect ? 'cursor-default pointer-events-none' : 'cursor-pointer';
+      div.className = `game-card ${sizeClasses} ${lockedClass} select-none ${isSelected ? 'selected-card' : ''} ${isWrong ? 'card-wrong shake-wrong' : ''} ${isSnap ? 'snap-pop' : ''}`;
       div.style.backgroundColor = card.color;
       div.dataset.cardId = card.id;
-      div.draggable = (!gameState.submitted && !isEvaluating);
+      div.draggable = (!gameState.submitted && !isEvaluating && !isCorrect);
 
       div.innerHTML = formatGodnameLines(card.godname);
 
@@ -1238,13 +1609,13 @@
         if (slotObj.evalStatus === 'correct') {
           badge.innerHTML = '<span class="text-emerald-950 drop-shadow-[0_1px_1px_rgba(255,255,255,0.9)] font-black text-base sm:text-lg">✓</span>';
         } else {
-          badge.innerHTML = '<span class="text-stone-900 drop-shadow-[0_1px_1px_rgba(255,255,255,0.6)] font-black text-base sm:text-lg">✕</span>';
+          badge.innerHTML = '<span class="text-red-700 drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)] font-black text-base sm:text-lg">✕</span>';
         }
         div.appendChild(badge);
       }
 
       div.addEventListener('dragstart', (e) => {
-        if (gameState.submitted || isEvaluating) {
+        if (gameState.submitted || isEvaluating || isCorrect) {
           e.preventDefault();
           return;
         }
@@ -1261,7 +1632,7 @@
 
       div.addEventListener('click', (e) => {
         e.stopPropagation();
-        if (gameState.submitted || isEvaluating) return;
+        if (gameState.submitted || isEvaluating || isCorrect) return;
 
         if (!selectedCardId) {
           if (location === 'slot') {
@@ -1282,10 +1653,11 @@
         }
 
         if (location === 'slot') {
+          if (slotObj && slotObj.evalStatus === 'correct') return;
           const slotIdx = gameState.slots.indexOf(slotObj);
           const incomingCard = selectedCardId;
           selectedCardId = null;
-          placeCardInSlot(incomingCard, slotIdx);
+          handleSlotAssignment(incomingCard, slotIdx);
         } else {
           selectedCardId = card.id;
           playSound('pickup');
@@ -1294,6 +1666,7 @@
       });
 
       div.addEventListener('pointerdown', (e) => {
+        if (isCorrect) return;
         if (e.pointerType === 'touch' || e.pointerType === 'pen') {
           handleTouchDrag(e, card);
         }
@@ -1354,7 +1727,7 @@
           const poolEl = dropTarget ? (dropTarget.closest('#left-pool-grid') || dropTarget.closest('#mobile-dock-cards') || dropTarget.closest('#mobile-cards-dock')) : null;
 
           if (slotEl && slotEl.dataset.slotIndex !== undefined) {
-            placeCardInSlot(card.id, parseInt(slotEl.dataset.slotIndex, 10));
+            handleSlotAssignment(card.id, parseInt(slotEl.dataset.slotIndex, 10));
           } else if (poolEl) {
             moveCardToPool(card.id);
           } else {
@@ -1368,46 +1741,117 @@
       window.addEventListener('pointercancel', onTouchEnd);
     }
 
-    function placeCardInSlot(cardId, targetSlotIndex) {
-      if (gameState.submitted || isEvaluating) return;
+    function handleSlotAssignment(cardId, targetSlotIndex) {
+      if (!gameState || gameState.submitted || isEvaluating) return null;
+      if (typeof targetSlotIndex !== 'number' || targetSlotIndex < 0 || targetSlotIndex >= gameState.slots.length) return null;
 
       const targetSlot = gameState.slots[targetSlotIndex];
-      if (!targetSlot) return;
+      if (!targetSlot || targetSlot.evalStatus === 'correct') return null;
+
+      const card = gameState.cards.find(c => c.id === cardId);
+      if (!card) return null;
 
       selectedCardId = null;
 
-      const prevPoolIdx = gameState.poolCardIds.indexOf(cardId);
-      const prevSlot = gameState.slots.find(s => s.placedCardId === cardId);
-      const displacedCardId = targetSlot.placedCardId;
+      // 1. Correct Match
+      if (card.correctSign === targetSlot.sign) {
+        targetSlot.placedCardId = card.id;
+        targetSlot.evalStatus = 'correct';
+        lastPlacedCardId = card.id;
 
-      if (displacedCardId === cardId) {
+        // Remove card from pool
+        const poolIdx = gameState.poolCardIds.indexOf(card.id);
+        if (poolIdx !== -1) {
+          gameState.poolCardIds.splice(poolIdx, 1);
+        }
+
+        gameState.score = (typeof gameState.score === 'number' ? gameState.score : 0) + 1;
+        updateScoreDisplay();
+        playSound('correct');
         renderBoard();
-        return;
+
+        // Check if all slots on the current page are solved
+        const allCorrect = gameState.slots.every(s => s.evalStatus === 'correct');
+        if (allCorrect) {
+          handlePageComplete();
+        }
+
+        return { status: 'correct', score: gameState.score, cardId, slotIndex: targetSlotIndex };
       }
 
-      if (prevPoolIdx !== -1) {
-        gameState.poolCardIds.splice(prevPoolIdx, 1);
-      }
-      if (prevSlot) {
-        prevSlot.placedCardId = null;
+      // 2. Incorrect Match
+      targetSlot.placedCardId = card.id;
+      targetSlot.evalStatus = 'wrong';
+      isEvaluating = true;
+
+      // Temporarily remove from pool so card doesn't appear simultaneously in pool & slot
+      const poolIdx = gameState.poolCardIds.indexOf(card.id);
+      if (poolIdx !== -1) {
+        gameState.poolCardIds.splice(poolIdx, 1);
       }
 
-      if (displacedCardId) {
-        if (prevSlot) {
-          // Swap: displaced card into previous slot
-          prevSlot.placedCardId = displacedCardId;
-        } else {
-          // Displace back into pool
-          if (!gameState.poolCardIds.includes(displacedCardId)) {
-            gameState.poolCardIds.push(displacedCardId);
+      renderBoard();
+
+      // Trigger shake animation on target slot card
+      const slotEl = typeof document !== 'undefined' ? document.querySelector(`.drop-slot[data-slot-index="${targetSlotIndex}"]`) : null;
+      const cardEl = slotEl ? slotEl.querySelector('.game-card') : null;
+      if (cardEl) {
+        cardEl.classList.remove('shake-wrong');
+        void cardEl.offsetWidth;
+        cardEl.classList.add('shake-wrong');
+      }
+
+      deductLife();
+
+      // Bounce card back to dock/pool after 400ms
+      setTimeout(() => {
+        if (targetSlot.placedCardId === card.id && targetSlot.evalStatus === 'wrong') {
+          targetSlot.placedCardId = null;
+          targetSlot.evalStatus = null;
+        }
+        if (!gameState.poolCardIds.includes(card.id)) {
+          if (poolIdx !== -1 && poolIdx <= gameState.poolCardIds.length) {
+            gameState.poolCardIds.splice(poolIdx, 0, card.id);
+          } else {
+            gameState.poolCardIds.push(card.id);
           }
         }
-      }
+        isEvaluating = false;
+        renderBoard();
+      }, 400);
 
-      targetSlot.placedCardId = cardId;
-      lastPlacedCardId = cardId;
-      playSound('drop');
-      renderBoard();
+      return { status: 'wrong', livesRemaining: gameState.lives, cardId, slotIndex: targetSlotIndex };
+    }
+
+    function placeCardInSlot(cardId, targetSlotIndex) {
+      return handleSlotAssignment(cardId, targetSlotIndex);
+    }
+
+    function handlePageComplete() {
+      stopCountdownTimer();
+      playSound('fanfare');
+      fireConfetti(120);
+
+      const page = (gameState && gameState.currentPage) ? gameState.currentPage : 1;
+      if (page === 1) {
+        const banner = document.getElementById('page-complete-banner');
+        if (banner) {
+          banner.style.display = 'flex';
+        }
+        if (pageTransitionTimeout) {
+          clearTimeout(pageTransitionTimeout);
+          pageTransitionTimeout = null;
+        }
+        pageTransitionTimeout = setTimeout(() => {
+          if (banner) {
+            banner.style.display = 'none';
+          }
+          pageTransitionTimeout = null;
+          loadPage(2);
+        }, 1500);
+      } else {
+        triggerVictory();
+      }
     }
 
     function moveCardToPool(cardId) {
@@ -1416,7 +1860,9 @@
       selectedCardId = null;
       const prevSlot = gameState.slots.find(s => s.placedCardId === cardId);
       if (prevSlot) {
+        if (prevSlot.evalStatus === 'correct') return; // Cannot recall correctly matched card
         prevSlot.placedCardId = null;
+        prevSlot.evalStatus = null;
         if (!gameState.poolCardIds.includes(cardId)) {
           gameState.poolCardIds.push(cardId);
         }
@@ -1519,7 +1965,8 @@
     function updateScoreDisplay() {
       const scoreEl = document.getElementById('score-display');
       if (scoreEl) {
-        scoreEl.textContent = (gameState && gameState.score !== undefined) ? gameState.score : 0;
+        const val = (gameState && typeof gameState.score === 'number') ? gameState.score : 0;
+        scoreEl.textContent = `${val} / 20`;
         const container = scoreEl.parentElement;
         if (container) {
           container.classList.remove('scale-110');
@@ -1530,46 +1977,249 @@
       }
     }
 
-    // 7. CONTROLS & TIMERS
-    function resetBoard() {
-      if (isEvaluating) return;
+    function updatePageIndicator() {
+      const pageEl = document.getElementById('page-indicator');
+      if (pageEl) {
+        const page = (gameState && gameState.currentPage) ? gameState.currentPage : 1;
+        pageEl.textContent = `Page ${page} of 2`;
+      }
+    }
+
+    function updateLifelinesUI() {
+      const container = document.getElementById('lifelines-container');
+      if (!container) return;
+      const lives = Math.max(0, (gameState && typeof gameState.lives === 'number') ? gameState.lives : 3);
+      let html = '';
+      for (let i = 1; i <= 3; i++) {
+        if (i <= lives) {
+          html += '<span class="heart-active transition-transform inline-block transform hover:scale-110" title="Active Life">❤️</span>';
+        } else {
+          html += '<span class="heart-lost transition-opacity inline-block opacity-35 grayscale" title="Lost Life">🖤</span>';
+        }
+      }
+      container.innerHTML = html;
+    }
+
+    function deductLife() {
+      if (!gameState) return;
+      if (typeof gameState.lives !== 'number') gameState.lives = 3;
+      if (gameState.lives > 0) {
+        gameState.lives--;
+        updateLifelinesUI();
+        playSound('wrong');
+        if (gameState.lives <= 0) {
+          triggerGameOver('lives');
+        }
+      }
+    }
+
+    function triggerGameOver(reason = 'lives') {
+      stopCountdownTimer();
+      console.log('Game Over triggered. Reason:', reason);
+      const modal = document.getElementById('gameover-modal');
+      const reasonEl = document.getElementById('gameover-reason');
+      const scoreEl = document.getElementById('gameover-score');
+
+      let reasonText = '';
+      if (reason === 'lives' || reason === 'wrong') {
+        reasonText = '3 गलत उत्तर (All 3 Lifelines Used)';
+      } else if (reason === 'timeout') {
+        reasonText = "समय समाप्त (Time's Up)";
+      } else {
+        reasonText = reason;
+      }
+
+      if (reasonEl) {
+        reasonEl.textContent = reasonText;
+      }
+      if (scoreEl) {
+        scoreEl.textContent = `कुल स्कोर: ${(gameState && typeof gameState.score === 'number' ? gameState.score : 0)} / 20`;
+      }
+      if (modal) {
+        modal.style.display = 'flex';
+      }
+      playSound('wrong');
+    }
+
+    function triggerVictory() {
+      stopCountdownTimer();
+      console.log('Victory triggered! Score: 20/20');
+      const modal = document.getElementById('victory-modal');
+      const scoreEl = document.getElementById('victory-score');
+      if (scoreEl) {
+        scoreEl.textContent = `${(gameState && typeof gameState.score === 'number' ? gameState.score : 20)} / 20 - सभी 20 सही उत्तर!`;
+      }
+      if (modal) {
+        modal.style.display = 'flex';
+      }
+      playSound('fanfare');
+      fireConfetti(160);
+    }
+
+    function returnToStartScreen() {
+      stopCountdownTimer();
+      if (pageTransitionTimeout) {
+        clearTimeout(pageTransitionTimeout);
+        pageTransitionTimeout = null;
+      }
+      isEvaluating = false;
+      selectedCardId = null;
+      lastPlacedCardId = null;
+
       if (confettiAnimationId) {
         cancelAnimationFrame(confettiAnimationId);
         confettiAnimationId = null;
         confettiParticles = [];
         const canvas = document.getElementById('fx-canvas');
-        if (canvas) {
+        if (canvas && typeof canvas.getContext === 'function') {
           const ctx = canvas.getContext('2d');
           if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
       }
-      initGameBoard(activeDataset);
-      renderBoard();
-      resetTimer();
+
+      const goModal = document.getElementById('gameover-modal');
+      if (goModal) goModal.style.display = 'none';
+      const vicModal = document.getElementById('victory-modal');
+      if (vicModal) vicModal.style.display = 'none';
+      const banner = document.getElementById('page-complete-banner');
+      if (banner) banner.style.display = 'none';
+      const resModal = document.getElementById('result-modal');
+      if (resModal) resModal.style.display = 'none';
+
+      showLandingScreen();
+    }
+
+    // 7. CONTROLS & TIMERS
+    function resetBoard() {
+      if (isEvaluating) return;
+      if (pageTransitionTimeout) {
+        clearTimeout(pageTransitionTimeout);
+        pageTransitionTimeout = null;
+      }
+      if (confettiAnimationId) {
+        cancelAnimationFrame(confettiAnimationId);
+        confettiAnimationId = null;
+        confettiParticles = [];
+        const canvas = document.getElementById('fx-canvas');
+        if (canvas && typeof canvas.getContext === 'function') {
+          const ctx = canvas.getContext('2d');
+          if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+      if (gameState) {
+        gameState.lives = 3;
+        gameState.score = 0;
+        gameState.currentPage = 1;
+      }
+      loadPage(1);
     }
 
     function startRandomGame() {
       if (isEvaluating) return;
+      if (pageTransitionTimeout) {
+        clearTimeout(pageTransitionTimeout);
+        pageTransitionTimeout = null;
+      }
       if (confettiAnimationId) {
         cancelAnimationFrame(confettiAnimationId);
         confettiAnimationId = null;
         confettiParticles = [];
         const canvas = document.getElementById('fx-canvas');
-        if (canvas) {
+        if (canvas && typeof canvas.getContext === 'function') {
           const ctx = canvas.getContext('2d');
           if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
       }
-      const randomDs = pickRandomDataset();
-      if (randomDs && Array.isArray(randomDs.items)) {
-        activeDataset = [...randomDs.items];
-        activeDatasetName = randomDs.name;
-        activeDatasetId = randomDs.id;
+      if (typeof GAME_SETS_20 !== 'undefined' && typeof pickRandomGameSet20 === 'function') {
+        const randomSet = pickRandomGameSet20((gameState && gameState.activeSet) ? gameState.activeSet.id : null);
+        if (randomSet) {
+          gameState.activeSet = randomSet;
+          gameState.currentPage = 1;
+          gameState.score = 0;
+          gameState.lives = 3;
+          activeDataset = [...randomSet.page1];
+          activeDatasetName = `${randomSet.name} (Page 1)`;
+          activeDatasetId = randomSet.id;
+        }
+      } else {
+        const randomDs = pickRandomDataset();
+        if (randomDs && Array.isArray(randomDs.items)) {
+          activeDataset = [...randomDs.items];
+          activeDatasetName = randomDs.name;
+          activeDatasetId = randomDs.id;
+          if (gameState) {
+            gameState.score = 0;
+            gameState.lives = 3;
+            gameState.currentPage = 1;
+          }
+        }
       }
       updateActiveDatasetUI();
-      initGameBoard(activeDataset);
-      renderBoard();
-      resetTimer();
+      loadPage(1);
+    }
+
+    function startNewGame() {
+      startRandomGame();
+    }
+
+    function launchGame() {
+      if (isLaunching) return;
+      isLaunching = true;
+      const startBtn = document.getElementById('start-game-btn');
+      if (startBtn) {
+        startBtn.disabled = true;
+        startBtn.classList.add('opacity-75', 'cursor-not-allowed');
+      }
+
+      // 1. Resumes / unlocks AudioContext
+      const ctx = getAudioCtx();
+      if (ctx && ctx.state === 'suspended') {
+        ctx.resume();
+      }
+
+      // 2. Play rising start launch chime
+      playSound('launch');
+
+      // 3. Animate game logo on landing screen
+      const logoContainer = document.getElementById('landing-game-logo-container');
+      if (logoContainer) {
+        logoContainer.classList.add('logo-launch-active');
+      }
+
+      // 4. Hide #landing-screen and show #game-playfield
+      setTimeout(() => {
+        const landingScreen = document.getElementById('landing-screen');
+        const gamePlayfield = document.getElementById('game-playfield');
+        if (landingScreen) landingScreen.style.display = 'none';
+        if (gamePlayfield) gamePlayfield.style.display = 'flex';
+
+        gameState.screen = 'playing';
+        startNewGame();
+        isLaunching = false;
+        if (startBtn) {
+          startBtn.disabled = false;
+          startBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+        }
+      }, 420);
+    }
+
+    function showLandingScreen() {
+      stopCountdownTimer();
+      isLaunching = false;
+      const startBtn = document.getElementById('start-game-btn');
+      if (startBtn) {
+        startBtn.disabled = false;
+        startBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+      }
+      const landingScreen = document.getElementById('landing-screen');
+      const gamePlayfield = document.getElementById('game-playfield');
+      const logoContainer = document.getElementById('landing-game-logo-container');
+      if (logoContainer) {
+        logoContainer.classList.remove('logo-launch-active');
+      }
+      if (gamePlayfield) gamePlayfield.style.display = 'none';
+      if (landingScreen) landingScreen.style.display = 'flex';
+      gameState.screen = 'landing';
     }
 
     function updateActiveDatasetUI() {
@@ -1697,34 +2347,66 @@
       resetBoard();
     }
 
-    function resetTimer() {
-      if (timerInterval) clearInterval(timerInterval);
-      timerSeconds = 0;
-      isPaused = false;
-      const pauseBtn = document.getElementById('pause-btn');
-      if (pauseBtn) pauseBtn.classList.remove('bg-amber-600');
-      updateTimerUI();
-      startTimer();
+    function updateTimerDisplay() {
+      const timerEl = document.getElementById('countdown-timer');
+      const mins = Math.floor(timerRemaining / 60);
+      const secs = timerRemaining % 60;
+      const formatted = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+
+      if (timerEl) {
+        timerEl.textContent = formatted;
+        if (timerRemaining <= 10) {
+          timerEl.classList.add('text-red-500', 'animate-pulse');
+        } else {
+          timerEl.classList.remove('text-red-500', 'animate-pulse');
+        }
+      }
+
+      const legacyTimerEl = document.getElementById('timer-display');
+      if (legacyTimerEl) {
+        legacyTimerEl.textContent = formatted;
+      }
     }
 
-    function startTimer() {
-      if (timerInterval) clearInterval(timerInterval);
+    function stopCountdownTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    function startCountdownTimer() {
+      stopCountdownTimer();
       timerInterval = setInterval(() => {
-        if (!isPaused && (!gameState || !gameState.submitted)) {
-          timerSeconds++;
-          updateTimerUI();
+        if (!isPaused && gameState && gameState.screen === 'playing' && !gameState.submitted) {
+          if (timerRemaining > 0) {
+            timerRemaining--;
+            timerSeconds = timerRemaining;
+            updateTimerDisplay();
+            if (timerRemaining <= 0) {
+              stopCountdownTimer();
+              triggerGameOver('timeout');
+            }
+          }
         }
       }, 1000);
     }
 
-    function updateTimerUI() {
-      const mins = Math.floor(timerSeconds / 60);
-      const secs = timerSeconds % 60;
-      const timerEl = document.getElementById('timer-display');
-      if (timerEl) {
-        timerEl.textContent = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-      }
+    function resetCountdownTimer(seconds = 60) {
+      stopCountdownTimer();
+      timerRemaining = seconds;
+      timerSeconds = seconds;
+      isPaused = false;
+      const pauseBtn = document.getElementById('pause-btn');
+      if (pauseBtn) pauseBtn.classList.remove('bg-amber-600');
+      updateTimerDisplay();
+      startCountdownTimer();
     }
+
+    // Legacy timer bridge
+    function resetTimer() { resetCountdownTimer(60); }
+    function startTimer() { startCountdownTimer(); }
+    function updateTimerUI() { updateTimerDisplay(); }
 
     function togglePause() {
       isPaused = !isPaused;
@@ -1738,8 +2420,14 @@
 
     function toggleSound() {
       soundEnabled = !soundEnabled;
-      document.getElementById('sound-on-icon').classList.toggle('hidden', !soundEnabled);
-      document.getElementById('sound-off-icon').classList.toggle('hidden', soundEnabled);
+      const soundOn = document.getElementById('sound-on-icon');
+      const soundOff = document.getElementById('sound-off-icon');
+      if (soundOn) soundOn.classList.toggle('hidden', !soundEnabled);
+      if (soundOff) soundOff.classList.toggle('hidden', soundEnabled);
+      const landingOn = document.getElementById('landing-sound-on-icon');
+      const landingOff = document.getElementById('landing-sound-off-icon');
+      if (landingOn) landingOn.classList.toggle('hidden', !soundEnabled);
+      if (landingOff) landingOff.classList.toggle('hidden', soundEnabled);
     }
 
     function toggleFullscreen() {
@@ -1924,7 +2612,14 @@
       }
 
       // Automatically picks a random dataset via startRandomGame() and updates UI indicators
-      startRandomGame();
+      const randomDs = pickRandomDataset();
+      if (randomDs && Array.isArray(randomDs.items)) {
+        activeDataset = [...randomDs.items];
+        activeDatasetName = randomDs.name;
+        activeDatasetId = randomDs.id;
+      }
+      updateActiveDatasetUI();
+      gameState.screen = 'landing';
     });
   </script>
 </body>

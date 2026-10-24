@@ -36,5 +36,10 @@ assert(html.includes('multiple') && html.includes('accept=".json"'), 'Must suppo
 assert(html.includes('handleSlotAssignment'), 'handleSlotAssignment must exist');
 assert(html.includes('deductLife'), 'deductLife function must exist');
 assert(html.includes('resetCountdownTimer'), 'resetCountdownTimer function must exist');
+assert(html.includes('pageTransitionTimeout'), 'pageTransitionTimeout variable must exist');
+
+// 6. Verify index.html is completely synchronized with jain_quest_matching_game.html
+const indexHtml = fs.readFileSync('index.html', 'utf8');
+assert.strictEqual(indexHtml, html, 'index.html must match jain_quest_matching_game.html exactly');
 
 console.log('✅ Full game integrity verification passed successfully!');
