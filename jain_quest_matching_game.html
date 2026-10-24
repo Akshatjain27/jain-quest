@@ -435,11 +435,11 @@
           </li>
           <li class="flex items-start gap-2.5">
             <span class="text-blue-600 font-bold text-base flex-shrink-0">⏱️</span>
-            <span><strong>1 मिनट प्रति पेज (60s Timer per Page):</strong> प्रत्येक पेज (10 प्रश्न) को हल करने के लिए 60 सेकंड का समय मिलेगा।</span>
+            <span><strong>30 सेकंड प्रति पेज (30s Timer per Page):</strong> प्रत्येक पेज (10 प्रश्न) को हल करने के लिए 30 सेकंड का समय मिलेगा।</span>
           </li>
           <li class="flex items-start gap-2.5">
             <span class="text-red-500 font-bold text-base flex-shrink-0">❤️</span>
-            <span><strong>3 लाइफलाइन (3 Lifelines):</strong> खेल में कुल 3 लाइफलाइन (❤️❤️❤️) हैं। गलत मिलान पर 1 लाइफलाइन घटेगी।</span>
+            <span><strong>3 लाइफ (3 Life):</strong> खेल में कुल 3 लाइफ (❤️❤️❤️) हैं। गलत मिलान पर 1 लाइफ घटेगी।</span>
           </li>
           <li class="flex items-start gap-2.5">
             <span class="text-emerald-600 font-bold text-base flex-shrink-0">⚡</span>
@@ -447,7 +447,7 @@
           </li>
           <li class="flex items-start gap-2.5">
             <span class="text-purple-600 font-bold text-base flex-shrink-0">⚠️</span>
-            <span><strong>गेम ओवर (Game Over):</strong> 3 लाइफलाइन समाप्त होने या समय खत्म होने पर गेम समाप्त हो जाएगा।</span>
+            <span><strong>गेम ओवर (Game Over):</strong> 3 लाइफ समाप्त होने या समय खत्म होने पर गेम समाप्त हो जाएगा।</span>
           </li>
         </ul>
       </div>
@@ -521,7 +521,7 @@
         </div>
       </div>
 
-      <!-- Right: Page Indicator, Score, Lifelines, Countdown Timer, Sound & Fullscreen -->
+      <!-- Right: Page Indicator, Score, Life, Countdown Timer, Sound & Fullscreen -->
       <div class="flex items-center gap-1.5 sm:gap-2.5 flex-wrap justify-end">
         <!-- Page Indicator -->
         <div id="page-indicator" class="bg-amber-100/90 border border-amber-400 text-amber-950 font-bold px-2 sm:px-2.5 py-1 rounded-lg text-xs sm:text-sm shadow-sm whitespace-nowrap" title="Current Page">
@@ -534,21 +534,21 @@
           <span id="score-display">0 / 20</span>
         </div>
 
-        <!-- 3 Lifelines -->
-        <div id="lifelines-container" class="flex items-center gap-0.5 bg-rose-50 border border-rose-300 px-2 py-1 rounded-lg text-sm sm:text-base shadow-sm select-none" title="3 Lifelines">
+        <!-- 3 Life -->
+        <div id="lifelines-container" class="flex items-center gap-0.5 bg-rose-50 border border-rose-300 px-2 py-1 rounded-lg text-sm sm:text-base shadow-sm select-none" title="3 Life">
           <span class="heart-icon transition-transform inline-block">❤️</span>
           <span class="heart-icon transition-transform inline-block">❤️</span>
           <span class="heart-icon transition-transform inline-block">❤️</span>
         </div>
 
-        <!-- 1-Minute Countdown Timer -->
-        <div class="bg-amber-950 text-amber-50 px-2 sm:px-2.5 py-1 rounded-lg font-mono font-bold text-xs sm:text-sm shadow-inner flex items-center gap-1.5" title="Countdown Timer (1 Minute)">
+        <!-- 30-Second Countdown Timer -->
+        <div class="bg-amber-950 text-amber-50 px-2 sm:px-3 py-1 rounded-xl font-mono font-bold text-xs sm:text-sm shadow-inner flex items-center gap-1.5" title="Countdown Timer (30s)">
           <svg class="w-3.5 h-3.5 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10" stroke-width="2"></circle>
             <path stroke-linecap="round" stroke-width="2" d="M12 6v6l4 2"></path>
           </svg>
-          <span id="countdown-timer">1:00</span>
-          <span id="timer-display" class="hidden">1:00</span>
+          <span id="countdown-timer" class="text-3xl sm:text-4xl font-extrabold font-mono text-amber-300 leading-none">30</span>
+          <span id="timer-display" class="hidden">30</span>
         </div>
 
         <!-- Sound Toggle -->
@@ -779,9 +779,9 @@
       <h2 class="text-3xl font-extrabold tracking-wide mb-2 drop-shadow">Page 1 Complete! 🎉</h2>
       <p class="text-xl font-bold text-amber-100 mb-4">शानदार! Page 2 शुरू हो रहा है...</p>
       <div class="inline-flex items-center gap-2.5 bg-amber-900/50 px-4 py-2 rounded-full text-sm font-semibold text-amber-200">
-        <span>⏱️ फ्रेश 60s टाइमर</span>
+        <span>⏱️ फ्रेश 30s टाइमर</span>
         <span>•</span>
-        <span>❤️ लाइफलाइन जारी रहेंगी</span>
+        <span>❤️ लाइफ जारी रहेंगी</span>
       </div>
     </div>
   </div>
@@ -795,7 +795,7 @@
         💔
       </div>
       <h2 class="text-2xl sm:text-3xl font-extrabold text-stone-900 mb-1">खेल समाप्त (Game Over)</h2>
-      <p id="gameover-reason" class="text-base font-bold text-red-600 mb-4">3 गलत उत्तर (All 3 Lifelines Used)</p>
+      <p id="gameover-reason" class="text-base font-bold text-red-600 mb-4">3 गलत उत्तर (All 3 Lives Lost)</p>
 
       <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 shadow-inner">
         <div class="text-xs uppercase tracking-wider text-stone-500 font-bold mb-1">कुल स्कोर (Final Score)</div>
@@ -1281,8 +1281,8 @@
 
     let selectedCardId = null;
     let lastPlacedCardId = null;
-    let timerRemaining = 60;
-    let timerSeconds = 60;
+    let timerRemaining = 30;
+    let timerSeconds = 30;
     let timerInterval = null;
     let pageTransitionTimeout = null;
     let isPaused = false;
@@ -1544,7 +1544,7 @@
       lastPlacedCardId = null;
       updateScoreDisplay();
       updatePageIndicator();
-      updateLifelinesUI();
+      updateLivesUI();
       updateUnplacedBadge();
     }
 
@@ -1572,7 +1572,8 @@
       initGameBoard(pageData);
       renderBoard();
       updatePageIndicator();
-      resetCountdownTimer(60);
+      timerRemaining = 30;
+      resetCountdownTimer(30);
     }
 
     function formatGodnameLines(name) {
@@ -2182,7 +2183,7 @@
       }
     }
 
-    function updateLifelinesUI() {
+    function updateLivesUI() {
       const container = document.getElementById('lifelines-container');
       if (!container) return;
       const lives = Math.max(0, (gameState && typeof gameState.lives === 'number') ? gameState.lives : 3);
@@ -2202,7 +2203,7 @@
       if (typeof gameState.lives !== 'number') gameState.lives = 3;
       if (gameState.lives > 0) {
         gameState.lives--;
-        updateLifelinesUI();
+        updateLivesUI();
         playSound('wrong');
         if (gameState.lives <= 0) {
           triggerGameOver('lives');
@@ -2219,7 +2220,7 @@
 
       let reasonText = '';
       if (reason === 'lives' || reason === 'wrong') {
-        reasonText = '3 गलत उत्तर (All 3 Lifelines Used)';
+        reasonText = '3 गलत उत्तर (All 3 Lives Lost)';
       } else if (reason === 'timeout') {
         reasonText = "समय समाप्त (Time's Up)";
       } else {
@@ -2356,6 +2357,7 @@
     }
 
     function startNewGame() {
+      timerRemaining = 30;
       startRandomGame();
     }
 
@@ -2546,16 +2548,16 @@
 
     function updateTimerDisplay() {
       const timerEl = document.getElementById('countdown-timer');
-      const mins = Math.floor(timerRemaining / 60);
-      const secs = timerRemaining % 60;
-      const formatted = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+      const formatted = `${timerRemaining}`;
 
       if (timerEl) {
         timerEl.textContent = formatted;
         if (timerRemaining <= 10) {
           timerEl.classList.add('text-red-500', 'animate-pulse');
+          timerEl.classList.remove('text-amber-300');
         } else {
           timerEl.classList.remove('text-red-500', 'animate-pulse');
+          timerEl.classList.add('text-amber-300');
         }
       }
 
@@ -2589,7 +2591,7 @@
       }, 1000);
     }
 
-    function resetCountdownTimer(seconds = 60) {
+    function resetCountdownTimer(seconds = 30) {
       stopCountdownTimer();
       timerRemaining = seconds;
       timerSeconds = seconds;
@@ -2601,7 +2603,7 @@
     }
 
     // Legacy timer bridge
-    function resetTimer() { resetCountdownTimer(60); }
+    function resetTimer() { resetCountdownTimer(30); }
     function startTimer() { startCountdownTimer(); }
     function updateTimerUI() { updateTimerDisplay(); }
 
