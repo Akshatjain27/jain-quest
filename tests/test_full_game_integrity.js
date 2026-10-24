@@ -3,23 +3,38 @@ const assert = require('assert');
 
 const html = fs.readFileSync('jain_quest_matching_game.html', 'utf8');
 
-// Verify Header Navigation elements
-assert(html.includes('id="new-game-btn"'), 'Header must have New Game button');
-assert(html.includes('id="active-dataset-pill"'), 'Header must have active dataset pill');
-assert(html.includes('id="timer-display"'), 'Header must have Timer display');
+// 1. Verify Landing Screen Architecture
+assert(html.includes('id="landing-screen"'), 'Landing screen element must exist');
+assert(html.includes('id="start-game-btn"'), 'Start game button must exist on landing screen');
+assert(html.includes('launchGame'), 'launchGame function must exist');
+assert(html.includes('showLandingScreen'), 'showLandingScreen function must exist');
+
+// 2. Verify Playfield Header Navigation & Arcade Elements
+assert(html.includes('id="game-playfield"'), 'Game playfield container must exist');
+assert(html.includes('id="page-indicator"'), 'Header must have Page indicator');
 assert(html.includes('id="score-display"'), 'Header must have Score display');
+assert(html.includes('id="lifelines-container"'), 'Header must have Lifelines container');
+assert(html.includes('id="countdown-timer"'), 'Header must have Countdown timer');
 assert(html.includes('id="sound-btn"'), 'Header must have Sound toggle button');
 assert(html.includes('id="data-modal"'), 'Data modal must exist');
 
-// Verify Multi-JSON file input
+// 3. Verify Two-Page Progression, Game Over, and Victory Modals
+assert(html.includes('id="page-complete-banner"'), 'Page complete celebratory banner must exist');
+assert(html.includes('id="gameover-modal"'), 'GameOver modal must exist');
+assert(html.includes('id="victory-modal"'), 'Victory modal must exist');
+assert(html.includes('loadPage'), 'loadPage progression function must exist');
+assert(html.includes('triggerGameOver'), 'triggerGameOver function must exist');
+assert(html.includes('triggerVictory'), 'triggerVictory function must exist');
+assert(html.includes('returnToStartScreen'), 'returnToStartScreen function must exist');
+
+// 4. Verify 20-Question Datasets & Multi-JSON Input
+assert(html.includes('GAME_SETS_20'), 'GAME_SETS_20 dataset registry must exist');
+assert(html.includes('pickRandomGameSet20'), 'Must invoke pickRandomGameSet20');
 assert(html.includes('multiple') && html.includes('accept=".json"'), 'Must support multiple JSON file selection');
 
-// Verify Results Modal actions
-assert(html.includes('id="result-modal"'), 'Result modal must exist');
-assert(html.includes('startRandomGame'), 'Must have action to start random game');
-assert(html.includes('fillCorrectAnswers'), 'Must have action to show correct answers');
-
-// Verify script loads with random set pick
-assert(html.includes('pickRandomDataset'), 'Must invoke pickRandomDataset on game initialization');
+// 5. Verify Instant Validation & Lifecycle Mechanics
+assert(html.includes('handleSlotAssignment'), 'handleSlotAssignment must exist');
+assert(html.includes('deductLife'), 'deductLife function must exist');
+assert(html.includes('resetCountdownTimer'), 'resetCountdownTimer function must exist');
 
 console.log('✅ Full game integrity verification passed successfully!');

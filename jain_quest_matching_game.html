@@ -771,6 +771,72 @@
   </div>
 
   <!-- =========================================================================
+       PAGE 1 COMPLETE CELEBRATORY BANNER (1.5s Overlay)
+       ========================================================================= -->
+  <div id="page-complete-banner" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm items-center justify-center p-4 select-none" style="display: none;">
+    <div class="bg-gradient-to-br from-amber-500 via-amber-600 to-amber-700 text-white rounded-3xl max-w-lg w-full p-8 text-center shadow-2xl border-4 border-amber-300 transform scale-100 transition-all">
+      <div class="text-5xl mb-3 animate-bounce">🎉</div>
+      <h2 class="text-3xl font-extrabold tracking-wide mb-2 drop-shadow">Page 1 Complete! 🎉</h2>
+      <p class="text-xl font-bold text-amber-100 mb-4">शानदार! Page 2 शुरू हो रहा है...</p>
+      <div class="inline-flex items-center gap-2.5 bg-amber-900/50 px-4 py-2 rounded-full text-sm font-semibold text-amber-200">
+        <span>⏱️ फ्रेश 60s टाइमर</span>
+        <span>•</span>
+        <span>❤️ लाइफलाइन जारी रहेंगी</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       GAME OVER MODAL (3 Strikes or Timeout)
+       ========================================================================= -->
+  <div id="gameover-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm items-center justify-center p-4 select-none" style="display: none;">
+    <div class="bg-gradient-to-b from-stone-50 via-white to-amber-50 rounded-3xl max-w-md w-full p-6 text-center shadow-2xl border-4 border-red-500">
+      <div class="w-16 h-16 mx-auto mb-3 rounded-full bg-red-100 border-2 border-red-400 flex items-center justify-center text-3xl">
+        💔
+      </div>
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-stone-900 mb-1">खेल समाप्त (Game Over)</h2>
+      <p id="gameover-reason" class="text-base font-bold text-red-600 mb-4">3 गलत उत्तर (All 3 Lifelines Used)</p>
+
+      <div class="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6 shadow-inner">
+        <div class="text-xs uppercase tracking-wider text-stone-500 font-bold mb-1">कुल स्कोर (Final Score)</div>
+        <div id="gameover-score" class="text-3xl font-black text-amber-950">0 / 20</div>
+      </div>
+
+      <div class="flex items-center justify-center gap-3">
+        <button id="gameover-start-btn" onclick="returnToStartScreen()" class="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-700 hover:to-amber-800 text-white font-extrabold text-base shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2 cursor-pointer" title="Return to Start Screen">
+          <span>🏠</span>
+          <span>स्टार्ट स्क्रीन (Start Screen)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       VICTORY MODAL (20/20 Complete)
+       ========================================================================= -->
+  <div id="victory-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm items-center justify-center p-4 select-none" style="display: none;">
+    <div class="bg-gradient-to-b from-amber-50 via-yellow-50 to-white rounded-3xl max-w-md w-full p-6 text-center shadow-2xl border-4 border-amber-500">
+      <div class="w-20 h-20 mx-auto mb-3 rounded-full bg-amber-100 border-2 border-amber-500 flex items-center justify-center text-4xl animate-bounce">
+        🏆
+      </div>
+      <h2 class="text-2xl sm:text-3xl font-extrabold text-amber-950 mb-1">🏆 जय जिनेन्द्र! अद्भुत प्रदर्शन!</h2>
+      <p class="text-sm font-semibold text-amber-800 mb-4">शानदार! आपने सभी 20 तीर्थंकर एवं उनके चिह्नों का सही मिलान किया।</p>
+
+      <div class="bg-emerald-50 border border-emerald-300 rounded-2xl p-4 mb-6 shadow-inner">
+        <div class="text-xs uppercase tracking-wider text-emerald-800 font-bold mb-1">विजय स्कोर (Victory Score)</div>
+        <div id="victory-score" class="text-3xl font-black text-emerald-600">20 / 20 - सभी 20 सही उत्तर!</div>
+      </div>
+
+      <div class="flex items-center justify-center gap-3">
+        <button id="victory-start-btn" onclick="returnToStartScreen()" class="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 hover:from-amber-700 hover:to-orange-700 text-white font-extrabold text-base shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2 cursor-pointer" title="Play Again">
+          <span>🔄</span>
+          <span>फिर से खेलें (Play Again)</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
        GAME ENGINE & INTERACTION LOGIC
        ========================================================================= -->
   <script>
@@ -1164,7 +1230,7 @@
 
     function fireConfetti(particleCount = 130) {
       const canvas = document.getElementById('fx-canvas');
-      if (!canvas) return;
+      if (!canvas || typeof canvas.getContext !== 'function') return;
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
@@ -1248,16 +1314,16 @@
     }
 
     function initGameBoard(dataset) {
-      const slice = dataset.slice(0, 10);
+      const slice = (dataset && Array.isArray(dataset)) ? dataset.slice(0, 10) : [];
 
       const cards = slice.map((item, idx) => ({
         id: `card_${idx}`,
-        godname: item.godname.trim(),
-        correctSign: item.sign.trim(),
+        godname: (item.godname || '').trim(),
+        correctSign: (item.sign || '').trim(),
         color: CARD_COLORS[idx % CARD_COLORS.length]
       }));
 
-      const shuffledSigns = shuffleArray(slice.map(item => item.sign.trim()));
+      const shuffledSigns = shuffleArray(slice.map(item => (item.sign || '').trim()));
 
       const slots = shuffledSigns.map((signText, sIdx) => ({
         slotId: `slot_${sIdx}`,
@@ -1284,6 +1350,33 @@
       updatePageIndicator();
       updateLifelinesUI();
       updateUnplacedBadge();
+    }
+
+    function loadPage(pageNum = 1) {
+      if (!gameState) return;
+      gameState.currentPage = pageNum;
+
+      let pageData = [];
+      if (gameState.activeSet) {
+        if (pageNum === 2 && gameState.activeSet.page2) {
+          pageData = gameState.activeSet.page2;
+        } else if (gameState.activeSet.page1) {
+          pageData = gameState.activeSet.page1;
+        } else if (gameState.activeSet['page' + pageNum]) {
+          pageData = gameState.activeSet['page' + pageNum];
+        }
+        activeDataset = [...pageData];
+        activeDatasetName = `${gameState.activeSet.name} (Page ${pageNum})`;
+        activeDatasetId = gameState.activeSet.id;
+        updateActiveDatasetUI();
+      } else if (activeDataset && Array.isArray(activeDataset)) {
+        pageData = activeDataset;
+      }
+
+      initGameBoard(pageData);
+      renderBoard();
+      updatePageIndicator();
+      resetCountdownTimer(60);
     }
 
     function formatGodnameLines(name) {
@@ -1734,9 +1827,25 @@
     }
 
     function handlePageComplete() {
-      console.log('Page complete for page:', gameState ? gameState.currentPage : 1);
+      stopCountdownTimer();
       playSound('fanfare');
-      fireConfetti(100);
+      fireConfetti(120);
+
+      const page = (gameState && gameState.currentPage) ? gameState.currentPage : 1;
+      if (page === 1) {
+        const banner = document.getElementById('page-complete-banner');
+        if (banner) {
+          banner.style.display = 'flex';
+        }
+        setTimeout(() => {
+          if (banner) {
+            banner.style.display = 'none';
+          }
+          loadPage(2);
+        }, 1500);
+      } else {
+        triggerVictory();
+      }
     }
 
     function moveCardToPool(cardId) {
@@ -1902,9 +2011,72 @@
       stopCountdownTimer();
       console.log('Game Over triggered. Reason:', reason);
       const modal = document.getElementById('gameover-modal');
+      const reasonEl = document.getElementById('gameover-reason');
+      const scoreEl = document.getElementById('gameover-score');
+
+      let reasonText = '';
+      if (reason === 'lives' || reason === 'wrong') {
+        reasonText = '3 गलत उत्तर (All 3 Lifelines Used)';
+      } else if (reason === 'timeout') {
+        reasonText = "समय समाप्त (Time's Up)";
+      } else {
+        reasonText = reason;
+      }
+
+      if (reasonEl) {
+        reasonEl.textContent = reasonText;
+      }
+      if (scoreEl) {
+        scoreEl.textContent = `कुल स्कोर: ${(gameState && typeof gameState.score === 'number' ? gameState.score : 0)} / 20`;
+      }
       if (modal) {
         modal.style.display = 'flex';
       }
+      playSound('wrong');
+    }
+
+    function triggerVictory() {
+      stopCountdownTimer();
+      console.log('Victory triggered! Score: 20/20');
+      const modal = document.getElementById('victory-modal');
+      const scoreEl = document.getElementById('victory-score');
+      if (scoreEl) {
+        scoreEl.textContent = `${(gameState && typeof gameState.score === 'number' ? gameState.score : 20)} / 20 - सभी 20 सही उत्तर!`;
+      }
+      if (modal) {
+        modal.style.display = 'flex';
+      }
+      playSound('fanfare');
+      fireConfetti(160);
+    }
+
+    function returnToStartScreen() {
+      stopCountdownTimer();
+      isEvaluating = false;
+      selectedCardId = null;
+      lastPlacedCardId = null;
+
+      if (confettiAnimationId) {
+        cancelAnimationFrame(confettiAnimationId);
+        confettiAnimationId = null;
+        confettiParticles = [];
+        const canvas = document.getElementById('fx-canvas');
+        if (canvas && typeof canvas.getContext === 'function') {
+          const ctx = canvas.getContext('2d');
+          if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+      }
+
+      const goModal = document.getElementById('gameover-modal');
+      if (goModal) goModal.style.display = 'none';
+      const vicModal = document.getElementById('victory-modal');
+      if (vicModal) vicModal.style.display = 'none';
+      const banner = document.getElementById('page-complete-banner');
+      if (banner) banner.style.display = 'none';
+      const resModal = document.getElementById('result-modal');
+      if (resModal) resModal.style.display = 'none';
+
+      showLandingScreen();
     }
 
     // 7. CONTROLS & TIMERS
@@ -1915,18 +2087,17 @@
         confettiAnimationId = null;
         confettiParticles = [];
         const canvas = document.getElementById('fx-canvas');
-        if (canvas) {
+        if (canvas && typeof canvas.getContext === 'function') {
           const ctx = canvas.getContext('2d');
           if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
       }
-      gameState.lives = 3;
-      gameState.score = 0;
-      initGameBoard(activeDataset);
-      renderBoard();
-      updatePageIndicator();
-      updateLifelinesUI();
-      resetCountdownTimer(60);
+      if (gameState) {
+        gameState.lives = 3;
+        gameState.score = 0;
+        gameState.currentPage = 1;
+      }
+      loadPage(1);
     }
 
     function startRandomGame() {
@@ -1936,7 +2107,7 @@
         confettiAnimationId = null;
         confettiParticles = [];
         const canvas = document.getElementById('fx-canvas');
-        if (canvas) {
+        if (canvas && typeof canvas.getContext === 'function') {
           const ctx = canvas.getContext('2d');
           if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
         }
@@ -1958,14 +2129,15 @@
           activeDataset = [...randomDs.items];
           activeDatasetName = randomDs.name;
           activeDatasetId = randomDs.id;
+          if (gameState) {
+            gameState.score = 0;
+            gameState.lives = 3;
+            gameState.currentPage = 1;
+          }
         }
       }
       updateActiveDatasetUI();
-      initGameBoard(activeDataset);
-      renderBoard();
-      updatePageIndicator();
-      updateLifelinesUI();
-      resetCountdownTimer(60);
+      loadPage(1);
     }
 
     function startNewGame() {
