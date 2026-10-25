@@ -13,7 +13,7 @@ assert(html.includes('launchGame()'), 'Start button must call launchGame()');
 assert(html.includes('खेलने के नियम') || html.includes('How to Play'), 'Must contain rules/how-to-play text');
 assert(html.includes('20') && (html.includes('प्रश्न') || html.includes('Questions')), 'Must mention 20 questions');
 assert(html.includes('3') && (html.includes('लाइफ') || html.includes('Life') || html.includes('❤️')), 'Must mention 3 lives');
-assert(html.includes('45') && (html.includes('सेकंड') || html.includes('45s')), 'Must mention 45s timer per page');
+assert(html.includes('60') && (html.includes('सेकंड') || html.includes('60s')), 'Must mention 60s timer per page');
 
 // Brand and game logos
 assert(html.includes('jainkosh-logo.jpeg'), 'Must include jainkosh logo');

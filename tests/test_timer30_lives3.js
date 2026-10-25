@@ -5,8 +5,8 @@ const vm = require('vm');
 const html = fs.readFileSync('jain_quest_matching_game.html', 'utf8');
 
 // 1. Static Checks: Timer initial value and default reset
-assert(html.includes('timerRemaining = 45'), 'Timer must start at 45 seconds');
-assert(html.includes('resetCountdownTimer(seconds = 45') || html.includes('resetCountdownTimer(45)'), 'Timer reset must default to or use 30 seconds');
+assert(html.includes('timerRemaining = 60'), 'Timer must start at 60 seconds');
+assert(html.includes('resetCountdownTimer(seconds = 60') || html.includes('resetCountdownTimer(60)'), 'Timer reset must default to or use 30 seconds');
 
 // 2. Large typography for timer
 assert(
@@ -25,10 +25,10 @@ assert(!html.includes('लाइफलाइन'), 'Wording must not contain "�
 assert(html.includes('3 लाइफ (3 Life)'), 'Landing rules must mention 3 Life');
 assert(html.includes('All 3 Lives Lost'), 'Game Over modal must mention All 3 Lives Lost');
 
-// 6. 30s per page in landing rules and page complete banner
-assert(html.includes('45 सेकंड प्रति पेज (45s Timer per Page)'), 'Rules must state 45s per page');
-assert(!html.includes('60s Timer per Page') && !html.includes('1 मिनट प्रति पेज'), 'Old 60s / 1 min timer rules must be removed');
-assert(!html.includes('60s टाइमर'), 'Page complete banner must not mention 60s');
+// 6. 60s per page in landing rules and page complete banner
+assert(html.includes('60 सेकंड प्रति पेज (60s Timer per Page)'), 'Rules must state 60s per page');
+assert(!html.includes('30s Timer per Page') && !html.includes('45s Timer per Page'), 'Old 30s / 45s timer rules must be removed');
+assert(!html.includes('30s टाइमर') && !html.includes('45s टाइमर'), 'Page complete banner must not mention 30s or 45s');
 
 // 7. Dynamic Execution Simulation via VM
 class MockElement {
@@ -104,11 +104,11 @@ const bridge = vm.runInContext(`
 
 // Test initial timer & lives
 assert.strictEqual(bridge.getGameState().lives, 3, 'Initial lives must be 3');
-assert.strictEqual(bridge.getTimerRemaining(), 45, 'Initial timerRemaining must be 45');
+assert.strictEqual(bridge.getTimerRemaining(), 60, 'Initial timerRemaining must be 60');
 
 // Test timer formatting & warning states
-bridge.resetCountdownTimer(45);
-assert.strictEqual(elements['countdown-timer'].textContent, '45', 'Timer display must show 45 as single integer');
+bridge.resetCountdownTimer(60);
+assert.strictEqual(elements['countdown-timer'].textContent, '60', 'Timer display must show 60 as single integer');
 assert(elements['countdown-timer'].classList.contains('text-amber-300'), 'Timer at >10s must have text-amber-300');
 assert(!elements['countdown-timer'].classList.contains('text-red-500'), 'Timer at >10s must not have text-red-500');
 

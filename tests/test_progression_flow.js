@@ -146,7 +146,7 @@ assert.strictEqual(state.currentPage, 1, 'Current page must be 1');
 assert.strictEqual(state.cards.length, 10, 'Page 1 must have 10 cards');
 assert.strictEqual(state.slots.length, 10, 'Page 1 must have 10 slots');
 assert.strictEqual(domElements['page-indicator'].textContent, 'Page 1 of 2', 'Page indicator must show Page 1 of 2');
-assert.strictEqual(bridge.getTimerRemaining(), 45, 'Page 1 timer must be initialized to 45s');
+assert.strictEqual(bridge.getTimerRemaining(), 60, 'Page 1 timer must be initialized to 60s');
 
 // Transition to Page 2
 state.score = 10;
@@ -159,7 +159,7 @@ assert.strictEqual(state.score, 10, 'Score must carry over to Page 2');
 assert.strictEqual(state.cards.length, 10, 'Page 2 must have 10 cards');
 assert.strictEqual(state.cards[0].godname.startsWith('God P2'), true, 'Page 2 cards must be loaded from activeSet.page2');
 assert.strictEqual(domElements['page-indicator'].textContent, 'Page 2 of 2', 'Page indicator must show Page 2 of 2');
-assert.strictEqual(bridge.getTimerRemaining(), 45, 'Page 2 timer must reset to 45s');
+assert.strictEqual(bridge.getTimerRemaining(), 60, 'Page 2 timer must reset to 60s');
 
 // Test triggerGameOver
 bridge.triggerGameOver('lives');
