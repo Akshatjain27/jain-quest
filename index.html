@@ -3,6 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <script>
+    // Android TVs and big panels often report a ~960x540 CSS viewport (1080p at 2x),
+    // below the desktop breakpoint, which forces the tall, scrolling phone layout.
+    // On landscape screens in that range, ask for a 1280px layout width so the whole
+    // board fits without scrolling. Phones in landscape (height < 500) are untouched.
+    (function () {
+      var w = window.innerWidth, h = window.innerHeight;
+      if (w > h && w >= 900 && w < 1280 && h >= 500 && h <= 700) {
+        document.querySelector('meta[name="viewport"]')
+          .setAttribute('content', 'width=1280, user-scalable=no');
+      }
+    })();
+  </script>
   <title>Jain Quest - जैन कोष (Tirthankara Sign Matching Game)</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -2815,11 +2828,15 @@
     }
 
     function toggleFullscreen() {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(() => {});
-      } else {
-        document.exitFullscreen().catch(() => {});
-      }
+      // Some TV / older WebView browsers only expose the webkit-prefixed API.
+      const el = document.documentElement;
+      const request = el.requestFullscreen || el.webkitRequestFullscreen;
+      const exit = document.exitFullscreen || document.webkitExitFullscreen;
+      const active = document.fullscreenElement || document.webkitFullscreenElement;
+      try {
+        const result = active ? (exit && exit.call(document)) : (request && request.call(el));
+        if (result && result.catch) result.catch(() => {});
+      } catch (_) {}
     }
 
     // Mobile Dock Drawer Toggling
