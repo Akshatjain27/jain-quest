@@ -202,7 +202,8 @@
       #landing-rules-card > div:first-child { margin-bottom: 6px !important; padding-bottom: 4px !important; }
       #landing-rules-card ul { margin-top: 0 !important; }
       #landing-rules-card ul > * + * { margin-top: 6px !important; }
-      #start-game-btn { padding-top: 10px !important; padding-bottom: 10px !important; }
+      #start-game-btn, #start-game-btn-adults { padding-top: 8px !important; padding-bottom: 8px !important; }
+      #level-prompt { margin-bottom: 4px !important; }
       #landing-screen > footer { padding-top: 2px !important; padding-bottom: 2px !important; }
     }
 
@@ -520,14 +521,24 @@
         </ul>
       </div>
 
-      <!-- Start Game Button -->
-      <button id="start-game-btn" onclick="launchGame()" class="btn-pulse-glow group relative inline-flex items-center justify-center gap-3 px-8 sm:px-12 py-3.5 sm:py-4 rounded-2xl bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 hover:from-amber-700 hover:via-amber-600 hover:to-yellow-600 text-white font-extrabold text-lg sm:text-2xl shadow-2xl border-2 border-amber-300 cursor-pointer transition-all duration-200 active:scale-95">
-        <span class="text-2xl sm:text-3xl">🚀</span>
-        <span>गेम शुरू करें (Start Game)</span>
-        <svg class="w-6 h-6 sm:w-7 sm:h-7 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
-        </svg>
-      </button>
+      <!-- Level Selection: Kids (Set 1: Tirthankara & Chinh) / Adults (Set 2: Nirvana Kshetra & Granth) -->
+      <p class="text-sm sm:text-base font-bold text-amber-950 mb-2" id="level-prompt">स्तर चुनें (Choose Level)</p>
+      <div class="flex flex-col sm:flex-row items-stretch justify-center gap-3 sm:gap-5 w-full max-w-3xl">
+        <button id="start-game-btn" onclick="startLevel('kids')" class="btn-pulse-glow group relative flex-1 inline-flex items-center justify-center gap-3 px-5 sm:px-8 py-3.5 sm:py-4 rounded-2xl bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 hover:from-amber-700 hover:via-amber-600 hover:to-yellow-600 text-white font-extrabold shadow-2xl border-2 border-amber-300 cursor-pointer transition-all duration-200 active:scale-95">
+          <span class="text-3xl sm:text-4xl">🧒</span>
+          <span class="flex flex-col text-left leading-tight">
+            <span class="text-xl sm:text-2xl">बच्चे (Kids)</span>
+            <span class="text-xs sm:text-sm font-bold opacity-95">तीर्थंकर एवं चिह्न</span>
+          </span>
+        </button>
+        <button id="start-game-btn-adults" onclick="startLevel('adults')" class="btn-pulse-glow group relative flex-1 inline-flex items-center justify-center gap-3 px-5 sm:px-8 py-3.5 sm:py-4 rounded-2xl bg-gradient-to-r from-emerald-700 via-emerald-600 to-teal-600 hover:from-emerald-800 hover:via-emerald-700 hover:to-teal-700 text-white font-extrabold shadow-2xl border-2 border-emerald-300 cursor-pointer transition-all duration-200 active:scale-95">
+          <span class="text-3xl sm:text-4xl">🧑</span>
+          <span class="flex flex-col text-left leading-tight">
+            <span class="text-xl sm:text-2xl">बड़े (Adults)</span>
+            <span class="text-xs sm:text-sm font-bold opacity-95">निर्वाण क्षेत्र एवं ग्रंथ</span>
+          </span>
+        </button>
+      </div>
 
     </div>
 
@@ -1300,6 +1311,16 @@
       }
       const idx = Math.floor(Math.random() * pool.length);
       return pool[idx];
+    }
+
+    // Levels shown on the start screen: each plays only its own 20-question set.
+    const LEVEL_SET_IDS = { kids: 'set_1', adults: 'set_2' };
+    let selectedLevel = null;
+
+    function startLevel(level) {
+      if (!LEVEL_SET_IDS[level]) return;
+      selectedLevel = level;
+      launchGame();
     }
 
     // 10 unique, distinct pastel card colors (no duplicates)
@@ -2558,7 +2579,8 @@
         }
       }
       if (typeof GAME_SETS_20 !== 'undefined' && typeof pickRandomGameSet20 === 'function') {
-        const randomSet = pickRandomGameSet20((gameState && gameState.activeSet) ? gameState.activeSet.id : null);
+        const levelSet = selectedLevel ? GAME_SETS_20.find(g => g.id === LEVEL_SET_IDS[selectedLevel]) : null;
+        const randomSet = levelSet || pickRandomGameSet20((gameState && gameState.activeSet) ? gameState.activeSet.id : null);
         if (randomSet) {
           gameState.activeSet = randomSet;
           gameState.currentPage = 1;
@@ -2594,11 +2616,12 @@
       if (isLaunching) return;
       isLaunching = true;
       bgMusicStep = 0;
-      const startBtn = document.getElementById('start-game-btn');
-      if (startBtn) {
-        startBtn.disabled = true;
-        startBtn.classList.add('opacity-75', 'cursor-not-allowed');
-      }
+      const levelBtns = ['start-game-btn', 'start-game-btn-adults']
+        .map(id => document.getElementById(id)).filter(Boolean);
+      levelBtns.forEach(btn => {
+        btn.disabled = true;
+        btn.classList.add('opacity-75', 'cursor-not-allowed');
+      });
 
       // 1. Resumes / unlocks AudioContext
       const ctx = getAudioCtx();
@@ -2626,21 +2649,23 @@
         startNewGame();
         startBackgroundMusic();
         isLaunching = false;
-        if (startBtn) {
-          startBtn.disabled = false;
-          startBtn.classList.remove('opacity-75', 'cursor-not-allowed');
-        }
+        levelBtns.forEach(btn => {
+          btn.disabled = false;
+          btn.classList.remove('opacity-75', 'cursor-not-allowed');
+        });
       }, 420);
     }
 
     function showLandingScreen() {
       stopCountdownTimer();
       isLaunching = false;
-      const startBtn = document.getElementById('start-game-btn');
-      if (startBtn) {
-        startBtn.disabled = false;
-        startBtn.classList.remove('opacity-75', 'cursor-not-allowed');
-      }
+      ['start-game-btn', 'start-game-btn-adults'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) {
+          btn.disabled = false;
+          btn.classList.remove('opacity-75', 'cursor-not-allowed');
+        }
+      });
       const landingScreen = document.getElementById('landing-screen');
       const gamePlayfield = document.getElementById('game-playfield');
       const logoContainer = document.getElementById('landing-game-logo-container');
