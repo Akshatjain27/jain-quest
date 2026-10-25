@@ -4,15 +4,32 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <script id="tv-viewport-fit">
-    // Android TVs and big panels often report a ~960x540 CSS viewport (1080p at 2x),
-    // below the desktop breakpoint, which forces the tall, scrolling phone layout.
-    // On landscape screens in that range, ask for a 1280px layout width so the whole
-    // board fits without scrolling. Phones in landscape (height < 500) are untouched.
+    // Classroom panels / Android TVs run the browser with a wide but SHORT viewport
+    // (e.g. ~960x430 CSS px once the toolbar and Android nav bar take their share).
+    // That is below the desktop breakpoint and too short for the phone layout, so the
+    // page crops and scrolls. On landscape screens that are wide (>= 940, so phones
+    // in landscape are untouched) but shorter than 720, request a layout width whose
+    // height works out to 720 CSS px: the desktop board then fits with no scrolling.
+    // Add ?debug to the URL to show the measured viewport on screen.
     (function () {
       var w = window.innerWidth, h = window.innerHeight;
-      if (w > h && w >= 900 && w < 1280 && h >= 500 && h <= 700) {
-        document.querySelector('meta[name="viewport"]')
-          .setAttribute('content', 'width=1280, user-scalable=no');
+      var meta = document.querySelector('meta[name="viewport"]');
+      var layoutW = null;
+      if (w > h && w >= 940 && h < 720) {
+        layoutW = Math.min(2000, Math.max(1280, Math.round(w * 720 / h)));
+        meta.setAttribute('content', 'width=' + layoutW + ', user-scalable=no');
+      }
+      if (/[?&]debug/.test(location.search)) {
+        document.addEventListener('DOMContentLoaded', function () {
+          var d = document.createElement('div');
+          d.style.cssText = 'position:fixed;left:4px;bottom:4px;z-index:99999;background:#000c;color:#fff;font:12px monospace;padding:4px 6px;border-radius:4px;pointer-events:none';
+          var fn = function () {
+            d.textContent = 'measured ' + w + 'x' + h + ' | layout ' + innerWidth + 'x' + innerHeight +
+              ' | dpr ' + devicePixelRatio + ' | touch ' + (navigator.maxTouchPoints || 0) +
+              ' | meta ' + meta.content;
+          };
+          fn(); window.addEventListener('resize', fn); document.body.appendChild(d);
+        });
       }
     })();
   </script>
@@ -170,6 +187,23 @@
       outline: 4px solid #3b82f6 !important;
       outline-offset: 3px;
       transform: scale(1.03);
+    }
+
+    /* Short landscape layouts (classroom panels / TVs, ~720px tall): compact the start
+       screen so the rules and the Start button fit without scrolling. */
+    @media (min-width: 900px) and (max-height: 780px) {
+      #landing-screen { padding-top: 8px !important; padding-bottom: 4px !important; }
+      #landing-screen > .flex-1 { padding-top: 0 !important; padding-bottom: 0 !important; }
+      #landing-game-logo-container { margin-bottom: 4px !important; }
+      #landing-game-logo-container > div { width: 76px !important; height: 76px !important; border-width: 3px !important; }
+      #landing-screen h2 { font-size: 2rem !important; line-height: 1.1 !important; margin-bottom: 0 !important; }
+      #landing-screen h2 + p { font-size: 1.05rem !important; margin-bottom: 8px !important; }
+      #landing-rules-card { padding: 10px 16px !important; margin-bottom: 10px !important; }
+      #landing-rules-card > div:first-child { margin-bottom: 6px !important; padding-bottom: 4px !important; }
+      #landing-rules-card ul { margin-top: 0 !important; }
+      #landing-rules-card ul > * + * { margin-top: 6px !important; }
+      #start-game-btn { padding-top: 10px !important; padding-bottom: 10px !important; }
+      #landing-screen > footer { padding-top: 2px !important; padding-bottom: 2px !important; }
     }
 
     /* Utility to hide scrollbars in mobile dock rail */
@@ -408,6 +442,14 @@
         </div>
       </div>
 
+      <div class="flex items-center gap-2">
+      <!-- Landing Screen Fullscreen Toggle (for TVs / classroom panels) -->
+      <button id="landing-fullscreen-btn" onclick="toggleFullscreen()" class="h-10 px-4 rounded-full bg-white/90 hover:bg-white text-stone-800 flex items-center justify-center gap-2 shadow-md border border-amber-200 transition font-bold text-sm" title="पूर्ण स्क्रीन (Full Screen)">
+        <svg class="w-5 h-5 text-amber-700" fill="currentColor" viewBox="0 0 24 24">
+          <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+        </svg>
+        <span>पूर्ण स्क्रीन (Full Screen)</span>
+      </button>
       <!-- Landing Screen Sound Toggle -->
       <button id="landing-sound-btn" onclick="toggleSound()" class="w-10 h-10 rounded-full bg-white/90 hover:bg-white text-stone-800 flex items-center justify-center shadow-md border border-amber-200 transition" title="ध्वनि चालू/बंद (Toggle Sound)">
         <svg id="landing-sound-on-icon" class="w-5 h-5 text-amber-700" fill="currentColor" viewBox="0 0 24 24">
@@ -417,6 +459,7 @@
           <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/>
         </svg>
       </button>
+      </div>
     </header>
 
     <!-- Center Hero: Game Logo + Title + Rules + Start Button -->
@@ -447,7 +490,7 @@
       </p>
 
       <!-- Rules & How to Play Card -->
-      <div class="w-full max-w-xl bg-white/90 backdrop-blur-md rounded-2xl p-4 sm:p-5 border-2 border-amber-400 shadow-xl text-left mb-6">
+      <div id="landing-rules-card" class="w-full max-w-xl bg-white/90 backdrop-blur-md rounded-2xl p-4 sm:p-5 border-2 border-amber-400 shadow-xl text-left mb-6">
         <div class="flex items-center gap-2 mb-3 pb-2 border-b border-amber-200">
           <span class="text-xl">📜</span>
           <h3 class="font-bold text-amber-950 text-base sm:text-lg">खेलने के नियम (How to Play)</h3>
