@@ -460,7 +460,7 @@
           </li>
           <li class="flex items-start gap-2.5">
             <span class="text-blue-600 font-bold text-base flex-shrink-0">⏱️</span>
-            <span><strong>45 सेकंड प्रति पेज (45s Timer per Page):</strong> प्रत्येक पेज (10 प्रश्न) को हल करने के लिए 45 सेकंड का समय मिलेगा।</span>
+            <span><strong>60 सेकंड प्रति पेज (60s Timer per Page):</strong> प्रत्येक पेज (10 प्रश्न) को हल करने के लिए 60 सेकंड का समय मिलेगा।</span>
           </li>
           <li class="flex items-start gap-2.5">
             <span class="text-red-500 font-bold text-base flex-shrink-0">❤️</span>
@@ -566,14 +566,14 @@
           <span class="heart-icon transition-transform inline-block">❤️</span>
         </div>
 
-        <!-- 45-Second Countdown Timer -->
-        <div class="bg-amber-950 text-amber-50 px-2 sm:px-3 py-1 rounded-xl font-mono font-bold text-xs sm:text-sm shadow-inner flex items-center gap-1.5" title="Countdown Timer (45s)">
+        <!-- 60-Second Countdown Timer -->
+        <div class="bg-amber-950 text-amber-50 px-2 sm:px-3 py-1 rounded-xl font-mono font-bold text-xs sm:text-sm shadow-inner flex items-center gap-1.5" title="Countdown Timer (60s)">
           <svg class="w-3.5 h-3.5 text-amber-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10" stroke-width="2"></circle>
             <path stroke-linecap="round" stroke-width="2" d="M12 6v6l4 2"></path>
           </svg>
-          <span id="countdown-timer" class="text-3xl sm:text-4xl font-extrabold font-mono text-amber-300 leading-none">45</span>
-          <span id="timer-display" class="hidden">45</span>
+          <span id="countdown-timer" class="text-3xl sm:text-4xl font-extrabold font-mono text-amber-300 leading-none">60</span>
+          <span id="timer-display" class="hidden">60</span>
         </div>
 
         <!-- Sound Toggle -->
@@ -801,7 +801,7 @@
       <h2 class="text-3xl font-extrabold tracking-wide mb-2 drop-shadow">Page 1 Complete! 🎉</h2>
       <p class="text-xl font-bold text-amber-100 mb-4">शानदार! Page 2 शुरू हो रहा है...</p>
       <div class="inline-flex items-center gap-2.5 bg-amber-900/50 px-4 py-2 rounded-full text-sm font-semibold text-amber-200">
-        <span>⏱️ फ्रेश 45s टाइमर</span>
+        <span>⏱️ फ्रेश 60s टाइमर</span>
         <span>•</span>
         <span>❤️ लाइफ जारी रहेंगी</span>
       </div>
@@ -1294,8 +1294,8 @@
 
     let selectedCardId = null;
     let lastPlacedCardId = null;
-    let timerRemaining = 45;
-    let timerSeconds = 45;
+    let timerRemaining = 60;
+    let timerSeconds = 60;
     let timerInterval = null;
     let pageTransitionTimeout = null;
     let isPaused = false;
@@ -1738,8 +1738,8 @@
       initGameBoard(pageData);
       renderBoard();
       updatePageIndicator();
-      timerRemaining = 45;
-      resetCountdownTimer(45);
+      timerRemaining = 60;
+      resetCountdownTimer(60);
       if (soundEnabled && gameState && gameState.screen === 'playing') {
         startBackgroundMusic();
       }
@@ -2543,7 +2543,7 @@
     }
 
     function startNewGame() {
-      timerRemaining = 45;
+      timerRemaining = 60;
       startRandomGame();
     }
 
@@ -2779,7 +2779,7 @@
       }, 1000);
     }
 
-    function resetCountdownTimer(seconds = 45) {
+    function resetCountdownTimer(seconds = 60) {
       stopCountdownTimer();
       timerRemaining = seconds;
       timerSeconds = seconds;
@@ -2791,7 +2791,7 @@
     }
 
     // Legacy timer bridge
-    function resetTimer() { resetCountdownTimer(45); }
+    function resetTimer() { resetCountdownTimer(60); }
     function startTimer() { startCountdownTimer(); }
     function updateTimerUI() { updateTimerDisplay(); }
 

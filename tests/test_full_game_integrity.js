@@ -44,7 +44,7 @@ assert(html.includes('startBackgroundMusic'), 'Must define startBackgroundMusic'
 assert(html.includes('stopBackgroundMusic'), 'Must define stopBackgroundMusic');
 assert(html.includes('playGameOverSound'), 'Must define playGameOverSound');
 assert(html.includes('updateLivesUI'), 'Must define updateLivesUI');
-assert(html.includes('timerRemaining = 45'), 'Timer must start at 45 seconds');
+assert(html.includes('timerRemaining = 60'), 'Timer must start at 60 seconds');
 assert(!html.includes('id="helper-banner"'), 'Helper banner must be removed');
 assert(!html.includes('Lifeline') && !html.includes('लाइफलाइन'), 'Lifeline wording must be removed in favor of Life');
 

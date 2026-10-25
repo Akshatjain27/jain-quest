@@ -112,9 +112,9 @@ assert.strictEqual(bridge.getGameState().lives, 0, 'Lives should reach 0');
 assert.strictEqual(gameOverReason, 'lives', 'triggerGameOver should be called with "lives" when lives reach 0');
 
 // Test countdown timer logic
-bridge.resetCountdownTimer(45);
-assert.strictEqual(bridge.getTimerRemaining(), 45, 'Timer should reset to 45');
-assert.strictEqual(elements['countdown-timer'].textContent, '45', 'Timer display should show 45');
+bridge.resetCountdownTimer(60);
+assert.strictEqual(bridge.getTimerRemaining(), 60, 'Timer should reset to 60');
+assert.strictEqual(elements['countdown-timer'].textContent, '60', 'Timer display should show 60');
 
 bridge.stopCountdownTimer();
 
