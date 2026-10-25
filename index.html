@@ -42,7 +42,10 @@
       box-shadow: 0 4px 0 rgba(0, 0, 0, 0.22), 0 6px 12px rgba(0, 0, 0, 0.12);
       transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.15s ease, background-color 0.25s ease;
       cursor: grab;
-      touch-action: manipulation;
+      /* 'none' so the browser never turns a finger/board drag into a page scroll
+         (that fires pointercancel and kills the drag). */
+      touch-action: none;
+      -webkit-touch-callout: none;
       position: relative;
       display: flex;
       flex-direction: column;
@@ -53,6 +56,15 @@
       padding: 6px 8px;
       font-weight: 700;
       color: #111;
+    }
+
+    /* Single-row dock rail: allow horizontal swipe to scroll the rail, while a
+       vertical drag (toward the drop boxes) still reaches our pointer handlers. */
+    #mobile-dock-cards {
+      overscroll-behavior: contain;
+    }
+    #mobile-dock-cards.overflow-x-auto .game-card {
+      touch-action: pan-x;
     }
 
     .game-card:hover {
@@ -1957,7 +1969,10 @@
       }
 
       div.addEventListener('dragstart', (e) => {
-        if (gameState.submitted || isEvaluating || isCorrect) {
+        // Touch/pen drags are handled by handleTouchDrag; block the native
+        // HTML5 drag (long-press) so it can't cancel the pointer stream.
+        if (lastPointerType === 'touch' || lastPointerType === 'pen' ||
+            gameState.submitted || isEvaluating || isCorrect) {
           e.preventDefault();
           return;
         }
@@ -2008,6 +2023,7 @@
       });
 
       div.addEventListener('pointerdown', (e) => {
+        lastPointerType = e.pointerType;
         if (isCorrect) return;
         if (e.pointerType === 'touch' || e.pointerType === 'pen') {
           handleTouchDrag(e, card);
@@ -2016,6 +2032,8 @@
 
       return div;
     }
+
+    let lastPointerType = 'mouse';
 
     function handleTouchDrag(e, card) {
       if (gameState.submitted || isEvaluating) return;
@@ -2060,6 +2078,13 @@
         }
 
         if (ghost) ghost.style.display = 'none';
+
+        // A cancelled gesture (e.g. rail scrolled sideways) is an abort, not a drop.
+        if (isDragging && ue.type === 'pointercancel') {
+          selectedCardId = null;
+          renderBoard();
+          return;
+        }
 
         if (isDragging) {
           selectedCardId = null;
